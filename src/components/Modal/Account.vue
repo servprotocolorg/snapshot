@@ -7,7 +7,7 @@
     <div v-if="!web3.account || step === 'connect'">
       <div class="m-4 mb-5">
         <a
-          v-for="(connector, id, i) in config.connectors"
+          v-for="(connector, id, i) in connectors"
           :key="i"
           @click="$emit('login', connector.id)"
           target="_blank"
@@ -18,7 +18,7 @@
             class="button-outline width-full v-align-middle"
           >
             <img
-              :src="`${path}/${connector.id}.png`"
+              :src="connector.img || `${path}/${connector.id}.png`"
               height="28"
               width="28"
               class="mr-1 v-align-middle"
@@ -30,9 +30,12 @@
             class="button-outline width-full v-align-middle"
           >
             <img
-              :src="`${path}/${injected.id}.png`"
+              :src="
+                'https://avatars.githubusercontent.com/u/39147399?s=400&v=4'
+              "
               height="28"
               width="28"
+              style="margin-bottom: 3px;"
               class="mr-1 v-align-middle"
             />
             {{ injected.name }}
@@ -61,7 +64,7 @@
           </UiButton>
         </a>
         <a
-          v-if="web3.profile?.name || web3.profile?.image"
+          v-if="false && web3.profile?.name || web3.profile?.image"
           :href="`https://3box.io/${web3.account}/edit`"
           target="_blank"
           class="mb-2 d-block"
@@ -72,7 +75,7 @@
           </UiButton>
         </a>
         <a
-          v-else
+          v-else-if="false"
           href="https://3box.io/hub"
           target="_blank"
           class="mb-2 d-block"
@@ -83,10 +86,10 @@
           </UiButton>
         </a>
         <UiButton
-          @click="step = 'connect'"
+          @click="handleChangeWallet"
           class="button-outline width-full mb-2"
         >
-          Connect wallet
+          Change wallet
         </UiButton>
         <UiButton
           @click="handleLogout"
@@ -101,7 +104,7 @@
 
 <script>
 import { mapActions } from 'vuex';
-import { getInjected } from '@snapshot-labs/lock/src/utils';
+// import { getInjected } from '@snapshot-labs/lock/src/utils';
 
 export default {
   props: ['open'],
@@ -110,7 +113,18 @@ export default {
     return {
       step: null,
       path:
-        'https://raw.githubusercontent.com/snapshot-labs/lock/master/connectors/assets'
+        'https://raw.githubusercontent.com/snapshot-labs/lock/master/connectors/assets',
+      connectors: [
+        {
+          name: 'MetaMask',
+          id: 'metamask'
+        },
+        {
+          name: 'One Wallet',
+          id: 'harmony',
+          img: 'https://avatars.githubusercontent.com/u/39147399?s=400&v=4'
+        }
+      ]
     };
   },
   watch: {
@@ -120,7 +134,8 @@ export default {
   },
   computed: {
     injected() {
-      return getInjected();
+      // return getInjected();
+      return { name: 'One Wallet', id: 'harmony' };
     }
   },
   methods: {
@@ -128,7 +143,14 @@ export default {
     async handleLogout() {
       await this.logout();
       this.$emit('close');
+    },
+    async handleChangeWallet() {
+      await this.logout();
+      this.step = 'connect';
     }
+  },
+  mounted() {
+    console.log(this);
   }
 };
 </script>

@@ -8,8 +8,8 @@
           </UiButton>
         </div>
         <div class="ml-3 text-right hide-sm">
-          {{ _n(spaces.length) }} space(s)
-          <router-link :to="{ name: 'setup' }" class="hide-md ml-3">
+          {{ spaces.length }} spaces
+          <router-link :to="{ name: 'setup' }" class="hide-md ml-3" v-show="false">
             <UiButton>Create space</UiButton>
           </router-link>
         </div>
@@ -25,7 +25,7 @@
           <div class="col-12 col-lg-3 pr-4 float-left">
             <Block
               class="text-center extra-icon-container"
-              style="height: 250px; margin-bottom: 24px !important;"
+              style="margin-bottom: 24px !important; height: 250px;"
             >
               <span class="position-relative d-inline-block">
                 <UiCounter

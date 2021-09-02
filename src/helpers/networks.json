@@ -1,0 +1,58 @@
+{
+  "1": {
+    "key": "1",
+    "name": "Harmony Mainnet",
+    "chainId": 1,
+    "network": "homestead",
+    "rpc": [
+      "https://a.api.s0.t.hmny.io",
+      {
+        "url": "https://a.api.s0.t.hmny.io",
+        "user": "balancer_user",
+        "password": "balancerAnkr20201015"
+      },
+      "https://a.api.s0.t.hmny.io"
+    ],
+    "explorer": "https://explorer.harmony.one/#",
+    "staking": "https://staking.harmony.one/validators/mainnet"
+  },
+  "2": {
+    "key": "2",
+    "name": "Harmony Testnet",
+    "chainId": 2,
+    "network": "homestead",
+    "rpc": [
+      "https://api.s0.b.hmny.io",
+      {
+        "url": "https://api.s0.b.hmny.io",
+        "user": "balancer_user",
+        "password": "balancerAnkr20201015"
+      },
+      "https://api.s0.b.hmny.io"
+    ],
+    "explorer": "https://explorer.pops.one/#",
+    "staking": "https://staking.harmony.one/validators/testnet"
+  },
+  "1666600000": {
+    "key": "1666600000",
+    "name": "Harmony Mainnet",
+    "shortName": "HarmonyMainnet",
+    "chainId": 1666600000,
+    "network": "mainnet",
+    "rpc": ["https://a.api.s0.t.hmny.io"],
+    "ws": ["wss://ws.s0.t.hmny.io"],
+    "explorer": "https://explorer.harmony.one/#",
+    "staking": "https://staking.harmony.one/validators/mainnet"
+  },
+  "1666700000": {
+    "key": "1666700000",
+    "name": "Harmony Testnet",
+    "shortName": "HarmonyTestnet",
+    "chainId": 1666700000,
+    "network": "testnet",
+    "rpc": ["https://api.s0.b.hmny.io"],
+    "ws": ["wss://ws.s0.b.hmny.io"],
+    "explorer": "https://explorer.pops.one/#",
+    "staking": "https://staking.harmony.one/validators/testnet"
+  }
+}

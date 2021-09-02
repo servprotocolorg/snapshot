@@ -12,12 +12,17 @@
           class="mr-1 tooltipped tooltipped-n"
           :aria-label="
             results.totalScores[choice.i]
-              .map((score, index) => `${_n(score)} ${titles[index]}`)
+              .map((score, index) => `${_numeral(score)} ${titles[index]}`)
               .join(' + ')
           "
         >
-          {{ _n(results.totalBalances[choice.i]) }}
-          {{ _shorten(space.symbol, 'symbol') }}
+          <template v-if="isDao">
+            {{ results.totalBalances[choice.i] }} Vote
+          </template>
+          <template v-else>
+            {{ _numeral(results.totalBalances[choice.i]) }}
+            {{ _shorten(space.symbol, 'symbol') }}
+          </template>
         </span>
         <span
           class="float-right"
@@ -25,7 +30,7 @@
             $n(
               !results.totalVotesBalances
                 ? 0
-                : ((100 / results.totalVotesBalances) *
+                : ((100 / totalBase) *
                     results.totalBalances[choice.i]) /
                     1e2,
               'percent'
@@ -35,7 +40,7 @@
       </div>
       <UiProgress
         :value="results.totalScores[choice.i]"
-        :max="results.totalVotesBalances"
+        :max="totalBase"
         :titles="titles"
         class="mb-3"
       />
@@ -68,6 +73,18 @@ export default {
           (a, b) =>
             this.results.totalBalances[b.i] - this.results.totalBalances[a.i]
         );
+    },
+    totalBase() {
+      if (['staking-mainnet', 'staking-testnet'].indexOf(this.space.key) > -1) {
+        return this.results.totalStaked;
+      } else if (['harmony-mainnet', 'harmony-testnet'].indexOf(this.space.key) > -1) {
+        return this.results.totalSupply;
+      } else {
+        return this.results.totalVotesBalances;
+      }
+    },
+    isDao() {
+      return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
     }
   },
   methods: {

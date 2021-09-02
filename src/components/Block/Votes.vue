@@ -15,27 +15,35 @@
         :profile="vote.profile"
         :address="address"
         :space="space"
+        :vname="
+          validatorNames[address.toLowerCase()]
+            ? validatorNames[address.toLowerCase()]
+            : ''
+        "
         class="column"
       />
       <div
         v-text="
-          _shorten(
-            proposal.msg.payload.choices[vote.msg.payload.choice - 1],
-            'choice'
-          )
+            isDao ? getMultiChoice(vote.msg.payload.choice)
+            : _shorten(proposal.msg.payload.choices[vote.msg.payload.choice - 1], 'choice-long')
         "
         class="flex-auto text-center text-white"
       />
-      <div class="column text-right text-white">
+      <div class="power-column text-right text-white">
         <span
           class="tooltipped tooltipped-n"
           :aria-label="
             vote.scores
-              .map((score, index) => `${_n(score)} ${titles[index]}`)
+              .map((score, index) => `${_numeral(score)} ${titles[index]}`)
               .join(' + ')
           "
         >
-          {{ `${_n(vote.balance)} ${_shorten(space.symbol, 'symbol')}` }}
+          <template v-if="isDao">
+            {{ vote.voteCount }} Vote
+          </template>
+          <template v-else>
+            {{ `${_numeral(vote.balance)} ${_shorten(space.symbol, 'symbol')}` }}
+          </template>
         </span>
         <a
           @click="openReceiptModal(vote)"
@@ -67,13 +75,14 @@
 
 <script>
 export default {
-  props: ['space', 'proposal', 'votes'],
+  props: ['space', 'proposal', 'votes', 'validatorNames'],
   data() {
     return {
       showAllVotes: false,
       authorIpfsHash: '',
       relayerIpfsHash: '',
-      modalReceiptOpen: false
+      modalReceiptOpen: false,
+      proposalOptions: this.proposal.msg.payload.choices,
     };
   },
   computed: {
@@ -86,6 +95,23 @@ export default {
     },
     titles() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
+    },
+    isDao() {
+      return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
+    },
+    voteResult() {
+      if (this.isDao) {
+        const result = [];
+        // re-cal vote power by count of choice
+        for (const address in this.votes) {
+          const vote = this.votes[address];
+          vote.voteCount = ((vote.msg.payload.choice).split('-')).length;
+          result.push(vote);
+        }
+        return result;
+      } else {
+        return this.votes;
+      }
     }
   },
   methods: {
@@ -95,14 +121,23 @@ export default {
       this.modalReceiptOpen = true;
     },
     sortVotesUserFirst() {
-      if (Object.keys(this.votes).includes(this.web3.account)) {
-        const { [[this.web3.account]]: firstKeyValue, ...rest } = this.votes;
+      if (Object.keys(this.voteResult).includes(this.web3.account)) {
+        const { [[this.web3.account]]: firstKeyValue, ...rest } = this.voteResult;
         return {
           [[this.web3.account]]: firstKeyValue,
           ...rest
         };
       }
       return this.votes;
+    },
+    getMultiChoice(choice) {
+      console.log('choice: ', choice);
+      const choices = choice.split('-');
+      const result = [];
+      for (const choice in choices) {
+        result.push(this.proposalOptions[choices[choice] - 1]);
+      }
+      return result.join(' / ');
     }
   }
 };

@@ -15,7 +15,7 @@
           </div>
         </div>
         <router-link
-          v-if="$auth.isAuthenticated.value"
+          v-if="canCreateProposal"
           :to="{ name: 'create', params: { key } }"
         >
           <UiButton>New proposal</UiButton>
@@ -69,8 +69,8 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
-import { filterProposals } from '@/helpers/utils';
+import { mapActions, mapState } from 'vuex';
+import { filterProposals, isAddressEqual } from '@/helpers/utils';
 
 export default {
   data() {
@@ -82,6 +82,30 @@ export default {
     };
   },
   computed: {
+    ...mapState(['app', 'web3']),
+    canCreateProposal() {
+      if (this.isDao || this.isHarmony) {
+        return this.isValidator || this.isMember;
+      } else {
+        // check members
+        if (this.space.members.length > 0) {
+          return this.isMember;
+        } else {
+          return this.$auth.isAuthenticated.value;
+        }
+      }
+    },
+    isValidator() {
+      if (!this.web3.account) {
+        return false;
+      }
+
+      const validator = this.app.validators.find(v =>
+        isAddressEqual(v.address, this.web3.account)
+      );
+
+      return Boolean(validator && validator.active);
+    },
     key() {
       return this.domain || this.$route.params.key;
     },
@@ -91,8 +115,8 @@ export default {
     states() {
       const states = [
         'all',
-        'core',
-        'community',
+        // 'core',
+        // 'community',
         'active',
         'pending',
         'closed'
@@ -113,15 +137,27 @@ export default {
       );
     },
     isMember() {
-      const members = this.space.members.map(address => address.toLowerCase());
-      return (
-        this.$auth.isAuthenticated.value &&
-        this.web3.account &&
-        members.includes(this.web3.account.toLowerCase())
-      );
+      if (!this.web3.account) {
+        return false;
+      }
+
+      if (this.space.members.length > 0) {
+        const member = this.space.members.find(v =>
+          isAddressEqual(v, this.web3.account)
+        );
+        return member !== undefined;
+      } else {
+        return false;
+      }
     },
     isEns() {
       return this.key.includes('.eth') || this.key.includes('.xyz');
+    },
+    isDao() {
+      return ['dao-mainnet', 'dao-testnet'].indexOf(this.key) > -1;
+    },
+    isHarmony() {
+      return ['staking-mainnet', 'staking-testnet'].indexOf(this.key) > -1;
     }
   },
   methods: {

@@ -1,207 +1,276 @@
 <template>
-  <Layout>
-    <template #content-left>
-      <div class="px-4 px-md-0 mb-3">
-        <router-link
-          :to="{ name: domain ? 'home' : 'proposals' }"
-          class="text-gray"
-        >
-          <Icon name="back" size="22" class="v-align-middle" />
-          {{ space.name }}
-        </router-link>
-      </div>
-      <div class="px-4 px-md-0">
-        <template v-if="loaded">
-          <h1 class="mb-2">
-            {{ payload.name }}
-            <span v-text="`#${id.slice(0, 7)}`" class="text-gray" />
-          </h1>
-          <div class="mb-4">
-            <State :proposal="proposal" />
-            <UiDropdown
-              class="float-right"
-              v-if="
-                space.key === 'dai' && proposal.address === this.web3.account
-              "
-              @delete="deleteProposal"
-              :items="[{ text: 'Delete proposal', action: 'delete' }]"
-            >
-              <UiLoading v-if="deleteLoading" />
-              <Icon
-                v-else
-                name="threedots"
-                size="25"
-                class="v-align-text-bottom"
-              />
-            </UiDropdown>
-          </div>
-          <UiMarkdown :body="payload.body" class="mb-6" />
-        </template>
-        <PageLoading v-else />
-      </div>
-      <Block
-        v-if="loaded && ts >= payload.start && ts < payload.end"
-        class="mb-4"
-        title="Cast your vote"
+  <Container :slim="true">
+    <div class="px-4 px-md-0 mb-3">
+      <router-link
+        :to="{ name: domain ? 'home' : 'proposals' }"
+        class="text-gray"
       >
-        <div class="mb-3">
-          <UiButton
-            v-for="(choice, i) in payload.choices"
-            :key="i"
-            @click="selectedChoice = i + 1"
-            class="d-block width-full mb-2"
-            :class="selectedChoice === i + 1 && 'button--active'"
-          >
-            {{ _shorten(choice, 32) }}
-            <a
-              v-if="payload.metadata.plugins?.aragon?.choice?.[i + 1]"
-              @click="modalOpen = true"
-              :aria-label="
-                `Target address: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .to
-                }\nValue: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .value
-                }\nData: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .data
-                }`
-              "
-              class="tooltipped tooltipped-n break-word"
-            >
-              <Icon name="warning" class="v-align-middle ml-1" />
-            </a>
-          </UiButton>
+        <Icon name="back" size="22" class="v-align-middle" />
+        {{ space.name }}
+      </router-link>
+    </div>
+    <div>
+      <div class="col-12 col-lg-8 float-left pr-0 pr-lg-5">
+        <div class="px-4 px-md-0">
+          <template v-if="loaded">
+            <h1 class="mb-2">
+              {{ payload.name }}
+              <span v-text="`#${id.slice(0, 7)}`" class="text-gray" />
+            </h1>
+            <div class="mb-4">
+              <State :proposal="proposal" />
+              <UiDropdown
+                class="float-right"
+                v-if="
+                  space.key === 'dai' && proposal.address === this.web3.account
+                "
+                @delete="deleteProposal"
+                :items="[{ text: 'Delete proposal', action: 'delete' }]"
+              >
+                <Icon name="threedots" size="25" class="v-align-text-bottom" />
+              </UiDropdown>
+            </div>
+            <UiMarkdown :body="payload.body" class="mb-6" />
+          </template>
+          <PageLoading v-else />
         </div>
-        <UiButton
-          :disabled="voteLoading || !selectedChoice || !web3.account"
-          :loading="voteLoading"
-          @click="modalOpen = true"
-          class="d-block width-full button--submit"
+        <Block
+          v-if="
+            loaded && ts >= payload.start && ts < payload.end && canVoteProposal
+          "
+          class="mb-4"
+          title="Cast your vote"
         >
-          Vote
-        </UiButton>
-      </Block>
-      <BlockVotes
-        v-if="loaded"
-        :space="space"
-        :proposal="proposal"
-        :votes="votes"
-      />
-    </template>
-    <template #sidebar-right v-if="loaded">
-      <Block title="Information">
-        <div class="mb-1">
-          <b>Strategie(s)</b>
-          <span
-            @click="modalStrategiesOpen = true"
-            class="float-right text-white a"
+          <div class="mb-3">
+            <UiButton
+              v-for="(choice, i) in payload.choices"
+              :key="i"
+              @click="selectOption(i + 1)"
+              class="d-block width-full mb-2"
+              :class="selectedChoiceSet.indexOf(i + 1) > -1 && 'button--active'"
+            >
+              {{ _shorten(choice, 32) }}
+              <a
+                v-if="payload.metadata.plugins?.aragon?.choice?.[i + 1]"
+                @click="modalOpen = true"
+                :aria-label="
+                  `Target address: ${
+                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                      .to
+                  }\nValue: ${
+                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                      .value
+                  }\nData: ${
+                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                      .data
+                  }`
+                "
+                class="tooltipped tooltipped-n break-word"
+              >
+                <Icon name="warning" class="v-align-middle ml-1" />
+              </a>
+            </UiButton>
+          </div>
+          <UiButton
+            :disabled="
+              voteLoading ||
+                !selectedChoice ||
+                !web3.account ||
+                selectedChoiceSet.length > payload.maxCanSelect
+            "
+            :loading="voteLoading"
+            @click="modalOpen = true"
+            class="d-block width-full button--submit"
           >
-            <span v-for="(symbol, symbolIndex) of symbols" :key="symbol">
-              <span :aria-label="symbol" class="tooltipped tooltipped-n">
-                <Token :space="space.key" :symbolIndex="symbolIndex" />
+            Vote
+          </UiButton>
+        </Block>
+        <BlockVotes
+          v-if="loaded"
+          :space="space"
+          :proposal="proposal"
+          :votes="votes"
+          :validatorNames="validatorNames"
+        />
+      </div>
+      <div v-if="loaded" class="col-12 col-lg-4 float-left">
+        <Block title="Information">
+          <div class="mb-1">
+            <b>Strategie(s)</b>
+            <span
+              @click="modalStrategiesOpen = true"
+              class="float-right text-white a"
+            >
+              <span v-for="(symbol, symbolIndex) of symbols" :key="symbol">
+                <span :aria-label="symbol" class="tooltipped tooltipped-n">
+                  <Token :space="space.key" :symbolIndex="symbolIndex" />
+                </span>
+                <span
+                  v-show="symbolIndex !== symbols.length - 1"
+                  class="ml-1"
+                />
               </span>
-              <span v-show="symbolIndex !== symbols.length - 1" class="ml-1" />
             </span>
-          </span>
-        </div>
-        <div class="mb-1">
-          <b>Author</b>
-          <User
-            :address="proposal.address"
-            :profile="proposal.profile"
-            :space="space"
-            class="float-right"
-          />
-        </div>
-        <div class="mb-1">
-          <b>IPFS</b>
-          <a
-            :href="_ipfsUrl(proposal.ipfsHash)"
-            target="_blank"
-            class="float-right"
-          >
-            #{{ proposal.ipfsHash.slice(0, 7) }}
-            <Icon name="external-link" class="ml-1" />
-          </a>
-        </div>
-        <div>
+          </div>
           <div class="mb-1">
-            <b>Start date</b>
-            <span
-              :aria-label="_ms(payload.start)"
-              v-text="$d(payload.start * 1e3, 'short')"
-              class="float-right text-white tooltipped tooltipped-n"
+            <b>Author</b>
+            <User
+              :address="proposal.address"
+              :profile="proposal.profile"
+              :space="space"
+              :vname="
+                validatorNames[proposal.address.toLowerCase()]
+                  ? validatorNames[proposal.address.toLowerCase()]
+                  : ''
+              "
+              class="float-right"
             />
           </div>
           <div class="mb-1">
-            <b>End date</b>
-            <span
-              :aria-label="_ms(payload.end)"
-              v-text="$d(payload.end * 1e3, 'short')"
-              class="float-right text-white tooltipped tooltipped-n"
-            />
-          </div>
-          <div class="mb-1">
-            <b>Snapshot</b>
+            <b>IPFS</b>
             <a
-              :href="_explorer(space.network, payload.snapshot, 'block')"
+              :href="_ipfsUrl(proposal.ipfsHash)"
               target="_blank"
               class="float-right"
             >
-              {{ _n(payload.snapshot, '0,0') }}
+              #{{ proposal.ipfsHash.slice(0, 7) }}
               <Icon name="external-link" class="ml-1" />
             </a>
           </div>
-        </div>
-      </Block>
-      <BlockResults
-        :id="id"
+          <div>
+            <div class="mb-1">
+              <b>Start date</b>
+              <span
+                :aria-label="_ms(payload.start)"
+                v-text="$d(payload.start * 1e3, 'short')"
+                class="float-right text-white tooltipped tooltipped-n"
+              />
+            </div>
+            <div class="mb-1">
+              <b>End date</b>
+              <span
+                :aria-label="_ms(payload.end)"
+                v-text="$d(payload.end * 1e3, 'short')"
+                class="float-right text-white tooltipped tooltipped-n"
+              />
+            </div>
+            <div class="mb-1">
+              <b>Snapshot</b>
+              <a
+                :href="_explorer(space.network, payload.snapshot, 'block')"
+                target="_blank"
+                class="float-right"
+              >
+                {{ payload.snapshot }}
+                <Icon name="external-link" class="ml-1" />
+              </a>
+            </div>
+            <div class="mb-1" v-if="payload.maxCanSelect > 1">
+              <b>Max selections</b>
+              <span class="float-right text-white">{{
+                payload.maxCanSelect
+              }}</span>
+            </div>
+            <template v-if="isHarmonySpace">
+              <div class="mb-1" v-if="epoch.length">
+                <b>Closed on epoch</b>
+                <span
+                  :aria-label="epoch"
+                  :v-text="epoch"
+                  class="float-right text-white tooltipped tooltipped-n"
+                >{{ epoch }}</span>
+              </div>
+
+              <div class="mb-1" v-if="false">
+                <b>Total votes</b>
+                <span
+                  :aria-label="totalVotesOne + ' / ' + results.totalStaked"
+                  :v-text="totalVotesOne + ' / ' + results.totalStaked"
+                  class="float-right text-white tooltipped tooltipped-n"
+                >
+                  {{
+                    Number(totalVotesPercent) > 0.01
+                      ? totalVotesPercent.toFixed(2)
+                      : totalVotesPercent.toFixed(4)
+                  }}
+                  %
+                </span>
+              </div>
+
+              <div class="mb-1">
+                <b>Total stake</b>
+                <span
+                  aria-label="Total stake on the network"
+                  :v-text="'Total stake on the network'"
+                  class="float-right text-white tooltipped tooltipped-n"
+                >
+                  {{ _numeral(results.totalStaked) }} ONE
+                </span>
+              </div>
+            </template>
+            <template v-if="isNativeSpace">
+              <div class="mb-1">
+                <b>Circulate supply</b>
+                <span
+                  aria-label="Circulate supply on the network"
+                  :v-text="'Circulate supply on the network'"
+                  class="float-right text-white tooltipped tooltipped-n"
+                >
+                  {{ _numeral(results.totalSupply, '(0,0)') }} ONE
+                </span>
+              </div>
+            </template>
+          </div>
+        </Block>
+        <BlockResults
+          :id="id"
+          :space="space"
+          :payload="payload"
+          :results="results"
+          :votes="votes"
+        />
+        <BlockActions
+          :id="id"
+          :space="space"
+          :payload="payload"
+          :results="results"
+        />
+        <PluginGnosisCustomBlock
+          v-if="payload.metadata.plugins?.gnosis?.baseTokenAddress"
+          :proposalConfig="payload.metadata.plugins.gnosis"
+          :choices="payload.choices"
+          :network="space.network"
+        />
+      </div>
+    </div>
+    <teleport to="#modal">
+      <ModalConfirm
+        v-if="loaded"
+        :open="modalOpen"
+        @close="modalOpen = false"
+        @reload="loadProposal"
         :space="space"
-        :payload="payload"
-        :results="results"
-        :votes="votes"
-      />
-      <BlockActions
+        :proposal="proposal"
         :id="id"
+        :selectedChoice="selectedChoice"
+        :totalScore="totalScore"
+        :scores="scores"
+        :snapshot="payload.snapshot"
+      />
+      <ModalStrategies
+        :open="modalStrategiesOpen"
+        @close="modalStrategiesOpen = false"
         :space="space"
-        :payload="payload"
-        :results="results"
+        :strategies="space.strategies"
       />
-      <PluginGnosisCustomBlock
-        v-if="payload.metadata.plugins?.gnosis?.baseTokenAddress"
-        :proposalConfig="payload.metadata.plugins.gnosis"
-        :choices="payload.choices"
-        :network="space.network"
-      />
-    </template>
-  </Layout>
-  <teleport to="#modal">
-    <ModalConfirm
-      v-if="loaded"
-      :open="modalOpen"
-      @close="modalOpen = false"
-      @reload="loadProposal"
-      :space="space"
-      :proposal="proposal"
-      :id="id"
-      :selectedChoice="selectedChoice"
-      :totalScore="totalScore"
-      :scores="scores"
-      :snapshot="payload.snapshot"
-    />
-    <ModalStrategies
-      :open="modalStrategiesOpen"
-      @close="modalStrategiesOpen = false"
-      :space="space"
-      :strategies="space.strategies"
-    />
-  </teleport>
+    </teleport>
+  </Container>
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
+import { isAddressEqual } from '@/helpers/utils';
+import { HarmonyAddress } from '@harmony-js/crypto';
 
 export default {
   data() {
@@ -211,18 +280,61 @@ export default {
       loading: false,
       loaded: false,
       voteLoading: false,
-      deleteLoading: false,
       proposal: {},
       votes: {},
       results: [],
       modalOpen: false,
       modalStrategiesOpen: false,
-      selectedChoice: 0,
+      selectedChoice: '',
+      selectedChoiceSet: [],
       totalScore: 0,
-      scores: []
+      scores: [],
+      validatorNames: {}
     };
   },
   computed: {
+    ...mapState(['app', 'web3']),
+    epoch() {
+      return String(this.app.epoch);
+    },
+    isHarmonySpace() {
+      return ['staking-mainnet', 'staking-testnet'].indexOf(this.key) > -1;
+    },
+    isNativeSpace() {
+      return ['harmony-mainnet', 'harmony-testnet'].indexOf(this.key) > -1;
+    },
+    isDao() {
+      return ['dao-mainnet', 'dao-testnet'].indexOf(this.key) > -1;
+    },
+    totalVotesOne() {
+      return this.results
+        ? this.results.totalBalances.reduce((acc, it) => acc + it, 0)
+        : 0;
+    },
+    totalVotesPercent() {
+      return this.totalVotesOne
+        ? (this.totalVotesOne / this.results.totalStaked) * 100
+        : 0;
+    },
+    canVoteProposal() {
+      if (!this.web3.account) {
+        return false;
+      }
+
+      const isUserVoted = Object.keys(this.votes || {}).some(address =>
+        isAddressEqual(address, this.web3.account)
+      );
+
+      if (this.isHarmonySpace || this.isDao) {
+        const iAmValidator = !!this.app.validators.find(v =>
+          isAddressEqual(v.address, this.web3.account)
+        );
+
+        return iAmValidator && !isUserVoted;
+      } else {
+        return !isUserVoted;
+      }
+    },
     space() {
       return this.app.spaces[this.key];
     },
@@ -251,6 +363,7 @@ export default {
       this.proposal = proposalObj.proposal;
       this.votes = proposalObj.votes;
       this.results = proposalObj.results;
+      console.log('proposalObj:', proposalObj);
     },
     async loadPower() {
       if (!this.web3.account || !this.proposal.address) return;
@@ -263,32 +376,38 @@ export default {
       this.scores = scores;
     },
     async deleteProposal() {
-      this.deleteLoading = true;
-      try {
-        if (
-          await this.send({
-            space: this.space.key,
-            type: 'delete-proposal',
-            payload: {
-              proposal: this.id
-            }
-          })
-        ) {
-          this.deleteLoading = false;
-          this.$router.push({
-            name: 'proposals'
-          });
+      console.log(this.id, this.space.key);
+      await this.send({
+        space: this.space.key,
+        type: 'delete-proposal',
+        payload: {
+          proposal: this.id
         }
-      } catch (e) {
-        console.error(e);
+      });
+    },
+    initValidatorName() {
+      if (this.isHarmonySpace) {
+        this.app.validators.forEach(item => {
+          this.validatorNames[new HarmonyAddress(item.address).bech32] = item.name;
+          this.validatorNames[(new HarmonyAddress(item.address).checksum).toLowerCase()] = item.name;
+        });
       }
-      this.deleteLoading = false;
+    },
+    selectOption(id) {
+      const optionIndex = this.selectedChoiceSet.indexOf(id);
+      if (optionIndex > -1) {
+        this.selectedChoiceSet.splice(optionIndex, 1);
+      } else {
+        this.selectedChoiceSet.push(id);
+      }
+      this.selectedChoice = this.selectedChoiceSet.join('-');
     }
   },
   async created() {
     this.loading = true;
     await this.loadProposal();
     await this.loadPower();
+    this.initValidatorName()
     this.loading = false;
     this.loaded = true;
   }

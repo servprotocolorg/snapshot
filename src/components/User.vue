@@ -12,14 +12,17 @@
         @close="modalOpen = false"
         :space="space"
         :address="address"
+        :vname="vname"
       />
     </teleport>
   </span>
 </template>
 
 <script>
+import { HarmonyAddress } from '@harmony-js/crypto';
+
 export default {
-  props: ['address', 'space', 'profile'],
+  props: ['address', 'space', 'profile', 'vname'],
   data() {
     return {
       modalOpen: false
@@ -29,16 +32,19 @@ export default {
     name() {
       if (
         this.web3.account &&
-        this.address.toLowerCase() === this.web3.account.toLowerCase()
+        new HarmonyAddress(this.address).checksum ===
+          new HarmonyAddress(this.web3.account).checksum
       ) {
         return 'You';
       }
-      if (this.profile?.name) {
+      if (this.vname) {
+        return this._shorten(this.vname, 22);
+      } else if (this.profile?.name) {
         return this.profile.name;
       } else if (this.profile?.ens) {
         return this.profile.ens;
       }
-      return this._shorten(this.address);
+      return this._shorten(new HarmonyAddress(this.address).bech32);
     }
   }
 };

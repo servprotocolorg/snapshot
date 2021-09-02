@@ -31,7 +31,7 @@ export default {
           ? 'space'
           : `logo${this.symbolIndex}`
         : 'logo';
-      return `https://raw.githubusercontent.com/snapshot-labs/snapshot-spaces/master/spaces/${this.space}/${file}.png`;
+      return `https://raw.githubusercontent.com/harmony-one/snapshot-spaces/master/spaces/${this.space}/${file}.png`;
     },
     spaceAddress() {
       if (this.space) return formatBytes32String(this.space.slice(0, 24));
