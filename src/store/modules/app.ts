@@ -491,7 +491,8 @@ const actions = {
       let votesResult: any[] = [];
       if (['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1) {
         for (const address in votes) {
-          const choices = votes[address].msg.payload.choice.split('-');
+          const choices = String(votes[address].msg.payload.choice).split('-');
+
           for (const choiceIndex in choices) {
             // deep copy vote result warp
             const voteItem = JSON.parse(JSON.stringify(votes[address]));

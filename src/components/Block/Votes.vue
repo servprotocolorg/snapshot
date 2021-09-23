@@ -82,7 +82,7 @@ export default {
       authorIpfsHash: '',
       relayerIpfsHash: '',
       modalReceiptOpen: false,
-      proposalOptions: this.proposal.msg.payload.choices,
+      proposalOptions: this.proposal.msg.payload.choices
     };
   },
   computed: {
@@ -90,8 +90,8 @@ export default {
       return this.showAllVotes
         ? this.sortVotesUserFirst()
         : Object.fromEntries(
-            Object.entries(this.sortVotesUserFirst()).slice(0, 10)
-          );
+          Object.entries(this.sortVotesUserFirst()).slice(0, 10)
+        );
     },
     titles() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
@@ -105,7 +105,7 @@ export default {
         // re-cal vote power by count of choice
         for (const address in this.votes) {
           const vote = this.votes[address];
-          vote.voteCount = ((vote.msg.payload.choice).split('-')).length;
+          vote.voteCount = (String(vote.msg.payload.choice).split('-')).length;
           result.push(vote);
         }
         return result;
@@ -132,7 +132,7 @@ export default {
     },
     getMultiChoice(choice) {
       console.log('choice: ', choice);
-      const choices = choice.split('-');
+      const choices = String(choice).split('-');
       const result = [];
       for (const choice in choices) {
         result.push(this.proposalOptions[choices[choice] - 1]);
