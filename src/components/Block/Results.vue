@@ -16,7 +16,7 @@
               .join(' + ')
           "
         >
-          <template v-if="isDao">
+          <template v-if="isCalcByCount">
             {{ results.totalBalances[choice.i] }} Vote
           </template>
           <template v-else>
@@ -85,6 +85,11 @@ export default {
     },
     isDao() {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
+    },
+    isCalcByCount() {
+      return (
+        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+      );
     }
   },
   methods: {

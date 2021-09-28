@@ -165,7 +165,7 @@ export function filterProposals(space, proposal, tab) {
   const start = proposal[1].msg.payload.start;
   const end = proposal[1].msg.payload.end;
 
-  if (!isMember && proposal[1].score < space.filters.minScore) return false;
+  // if (!isMember && proposal[1].score < space.filters.minScore) return false;
   if (space.filters.onlyMembers && !isMember) return false;
   if (space.filters.invalids.includes(proposal[1].authorIpfsHash)) return false;
 

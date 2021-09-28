@@ -60,7 +60,13 @@ const state = {
   authLoading: false,
   modalOpen: false,
   spaces: {},
-  validators: [] as Validator[]
+  validators: [] as Validator[],
+  harmonyDaoSpace: [
+    'harmony-community-dao',
+    'harmony-creative-dao',
+    'harmony-developer-dao',
+    'harmony-incubator-dao'
+  ]
 };
 
 const mutations = {
@@ -435,9 +441,7 @@ const actions = {
                 return {
                   ...acc,
                   [addr]: validator
-                    ? Number(
-                      ones(validator.totalStake || validator.total_stake)
-                    )
+                    ? Number(ones(validator.totalStake || validator.total_stake))
                     : Number(ones(0))
                 };
               }
@@ -448,6 +452,51 @@ const actions = {
         console.timeEnd('getHarmonyProposal.scores');
 
         console.log('harmony scores: ', scores);
+      } else if (state.harmonyDaoSpace.indexOf(space.key) > -1) {
+        let scoresRaw: any;
+        [scoresRaw, profiles] = await Promise.all([
+          getScores(
+            space.key,
+            space.strategies,
+            space.network,
+            provider,
+            voters,
+            // @ts-ignore
+            blockTag
+          ),
+          getProfiles([proposal.address, ...voters])
+        ]);
+        console.log('HRC20 scores: ', scoresRaw);
+
+        const scoresSet = {};
+        for (const strategiesIndex in scoresRaw) {
+          const strategiesScores = scoresRaw[strategiesIndex];
+          for (const scoresAddress in strategiesScores) {
+            if (!scoresSet[scoresAddress]) {
+              scoresSet[scoresAddress] = strategiesScores[scoresAddress];
+            } else {
+              scoresSet[scoresAddress] += strategiesScores[scoresAddress];
+            }
+          }
+        }
+
+        let minScore = 0;
+        if (space.filters && space.filters.minScore > 0) {
+          minScore = space.filters.minScore;
+        }
+
+        const scoresNew = [];
+        for (const strategiesIndex in space.strategies) {
+          scoresNew[strategiesIndex] = {};
+        }
+
+        for (const scoresAddress in scoresSet) {
+          if (scoresSet[scoresAddress] > minScore) {
+            // @ts-ignore
+            scoresNew[0][scoresAddress] = 1;
+          }
+        }
+        scores = scoresNew;
       } else {
         console.time('getHRC20Proposal.scores');
         [scores, profiles] = await Promise.all([
@@ -463,8 +512,6 @@ const actions = {
           getProfiles([proposal.address, ...voters])
         ]);
         console.timeEnd('getHRC20Proposal.scores');
-
-        console.log('HRC20 scores: ', scores);
       }
 
       const authorProfile = profiles[proposal.address];
@@ -472,7 +519,6 @@ const actions = {
         votes[address].profile = profiles[address];
       });
       proposal.profile = authorProfile;
-      console.log('space.strategies', space.strategies);
 
       votes = Object.fromEntries(
         Object.entries(votes)
@@ -486,10 +532,11 @@ const actions = {
           .sort((a, b) => b[1].balance - a[1].balance)
           .filter(vote => vote[1].balance > 0)
       );
+      console.log(votes);
 
       /* Get results */
       let votesResult: any[] = [];
-      if (['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1) {
+      if (['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1 || state.harmonyDaoSpace.indexOf(space.key) > -1) {
         for (const address in votes) {
           const choices = String(votes[address].msg.payload.choice).split('-');
 
@@ -503,8 +550,6 @@ const actions = {
       } else {
         votesResult = votes;
       }
-
-      console.log('votesResult: ', votesResult);
 
       const results = {
         totalStaked: ones(totalStaked).toFixed(0),
@@ -534,7 +579,6 @@ const actions = {
         ),
         totalSupply: totalSupply
       };
-      console.log('proposal: ', proposal);
       commit('GET_PROPOSAL_SUCCESS');
       return { proposal, votes, results };
     } catch (e) {
@@ -561,6 +605,35 @@ const actions = {
         );
 
         scores = [validator ? 1 : 0];
+      } else if (state.harmonyDaoSpace.indexOf(space.key) > -1) {
+        const blockNumber = await getBlockNumber(getProvider(space.network));
+        const addressHex = new HarmonyAddress(address).checksum;
+        const blockTag = snapshot > blockNumber ? 'latest' : parseInt(snapshot);
+        const scoresRaw = await getScores(
+          space.key,
+          space.strategies,
+          space.network,
+          getProvider(space.network),
+          [addressHex],
+          // @ts-ignore
+          blockTag
+        );
+
+        const scoresSet = scoresRaw.map((score: any) =>
+          Object.values(score).reduce((a, b: any) => a + b, 0)
+        );
+
+        const totalScores: any = scoresSet.reduce((a, b: any) => a + b, 0);
+        console.log('totalScores:', totalScores, 'scoresSet:', scoresSet, 'space.filters.minScore:', space.filters.minScore);
+        if (space.filters.minScore) {
+          if (totalScores >= space.filters.minScore) {
+            scores = [1];
+          } else {
+            scores = [0];
+          }
+        } else {
+          scores = [1];
+        }
       } else {
         const blockNumber = await getBlockNumber(getProvider(space.network));
         const addressHex = new HarmonyAddress(address).checksum;
@@ -576,15 +649,12 @@ const actions = {
           blockTag
         );
 
-        console.log('scores: ', scores);
-
         scores = scores.map((score: any) =>
           Object.values(score).reduce((a, b: any) => a + b, 0)
         );
       }
 
       commit('GET_POWER_SUCCESS');
-      console.log('scores: ', scores);
       return {
         scores,
         totalScore: scores.reduce((a, b: any) => a + b, 0)

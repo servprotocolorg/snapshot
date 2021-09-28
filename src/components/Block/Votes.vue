@@ -24,7 +24,7 @@
       />
       <div
         v-text="
-            isDao ? getMultiChoice(vote.msg.payload.choice)
+            canMultiOptions ? getMultiChoice(vote.msg.payload.choice)
             : _shorten(proposal.msg.payload.choices[vote.msg.payload.choice - 1], 'choice-long')
         "
         class="flex-auto text-center text-white"
@@ -38,7 +38,7 @@
               .join(' + ')
           "
         >
-          <template v-if="isDao">
+          <template v-if="isCalcByCount">
             {{ vote.voteCount }} Vote
           </template>
           <template v-else>
@@ -99,8 +99,14 @@ export default {
     isDao() {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
     },
+    canMultiOptions() {
+      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1);
+    },
+    isCalcByCount() {
+      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1);
+    },
     voteResult() {
-      if (this.isDao) {
+      if (this.canMultiOptions) {
         const result = [];
         // re-cal vote power by count of choice
         for (const address in this.votes) {
@@ -131,7 +137,6 @@ export default {
       return this.votes;
     },
     getMultiChoice(choice) {
-      console.log('choice: ', choice);
       const choices = String(choice).split('-');
       const result = [];
       for (const choice in choices) {
