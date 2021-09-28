@@ -121,7 +121,7 @@
                 placeholder="Snapshot block number"
               />
             </UiButton>
-            <UiButton class="width-full mb-2"  v-if="isDao">
+            <UiButton class="width-full mb-2"  v-if="canMultiOptions">
               <input
                 v-model="form.maxCanSelect"
                 type="number"
@@ -207,6 +207,9 @@ export default {
     isDao() {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.key) > -1;
     },
+    canMultiOptions() {
+      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.key) > -1);
+    },
     isValid() {
       // const ts = (Date.now() / 1e3).toFixed();
       return (
@@ -234,7 +237,7 @@ export default {
     this.blockNumber = await getBlockNumber(getProvider(this.space.network));
 
     // no-Dao space can only choose one option
-    if (!this.isDao) this.form.maxCanSelect = 1;
+    if (!this.canMultiOptions) this.form.maxCanSelect = 1;
 
     this.form.snapshot = this.blockNumber;
     if (this.from) {

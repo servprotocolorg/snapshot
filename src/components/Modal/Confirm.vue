@@ -31,7 +31,7 @@
             <Icon name="external-link" class="ml-1" />
           </a>
         </div>
-        <div class="d-flex" v-if="isDao">
+        <div class="d-flex" v-if="isCalcByCount">
           <span v-text="'Your voting count'" class="flex-auto text-gray mr-1" />
           <span class="tooltipped tooltipped-nw">
             {{ selectedChoiceSet.length }} Vote
@@ -100,6 +100,11 @@ export default {
     },
     isDao() {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
+    },
+    isCalcByCount() {
+      return (
+        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+      );
     },
     selectedChoiceSet() {
       return this.selectedChoice.split('-');

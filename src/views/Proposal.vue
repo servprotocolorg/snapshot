@@ -73,7 +73,7 @@
           </div>
           <UiButton
             :disabled="
-              voteLoading ||
+                voteLoading ||
                 !selectedChoice ||
                 !web3.account ||
                 selectedChoiceSet.length > payload.maxCanSelect
@@ -168,8 +168,14 @@
             <div class="mb-1" v-if="payload.maxCanSelect > 1">
               <b>Max selections</b>
               <span class="float-right text-white">{{
-                payload.maxCanSelect
-              }}</span>
+                  payload.maxCanSelect
+                }}</span>
+            </div>
+            <div class="mb-1" v-if="minTokenAmount > 0">
+              <b>Min token amount</b>
+              <span class="float-right text-white">{{
+                  minTokenAmount+" "+space.symbol
+                }}</span>
             </div>
             <template v-if="isHarmonySpace">
               <div class="mb-1" v-if="epoch.length">
@@ -321,6 +327,10 @@ export default {
         return false;
       }
 
+      if (this.totalScore <= 0) {
+        return false;
+      }
+
       const isUserVoted = Object.keys(this.votes || {}).some(address =>
         isAddressEqual(address, this.web3.account)
       );
@@ -346,6 +356,13 @@ export default {
     },
     symbols() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
+    },
+    minTokenAmount() {
+      let minScore = 0;
+      if (this.space.filters && this.space.filters.minScore > 0) {
+        minScore = this.space.filters.minScore;
+      }
+      return minScore;
     }
   },
   watch: {
@@ -374,9 +391,9 @@ export default {
       });
       this.totalScore = totalScore;
       this.scores = scores;
+      console.log('totalScore:', this.totalScore);
     },
     async deleteProposal() {
-      console.log(this.id, this.space.key);
       await this.send({
         space: this.space.key,
         type: 'delete-proposal',
@@ -407,7 +424,7 @@ export default {
     this.loading = true;
     await this.loadProposal();
     await this.loadPower();
-    this.initValidatorName()
+    this.initValidatorName();
     this.loading = false;
     this.loaded = true;
   }
