@@ -1,6 +1,6 @@
 import { getProfiles } from '@/helpers/3box';
 import { getInstance } from '@snapshot-labs/lock/plugins/vue3';
-import { ipfsGet, getScores } from '@snapshot-labs/snapshot.js/src/utils';
+import { ipfsGet, getScores, getScoresDirect } from '@snapshot-labs/snapshot.js/src/utils';
 import {
   getBlockNumber,
   signMessage
@@ -268,7 +268,7 @@ const actions = {
           ];
           console.log('harmony staked scores: ', scores);
         } else {
-          scores = await getScores(
+          scores = await getScoresDirect(
             space.key,
             space.strategies,
             space.network,
@@ -455,7 +455,7 @@ const actions = {
       } else if (state.harmonyDaoSpace.indexOf(space.key) > -1) {
         let scoresRaw: any;
         [scoresRaw, profiles] = await Promise.all([
-          getScores(
+          getScoresDirect(
             space.key,
             space.strategies,
             space.network,
@@ -500,7 +500,7 @@ const actions = {
       } else {
         console.time('getHRC20Proposal.scores');
         [scores, profiles] = await Promise.all([
-          getScores(
+          getScoresDirect(
             space.key,
             space.strategies,
             space.network,
@@ -609,7 +609,7 @@ const actions = {
         const blockNumber = await getBlockNumber(getProvider(space.network));
         const addressHex = new HarmonyAddress(address).checksum;
         const blockTag = snapshot > blockNumber ? 'latest' : parseInt(snapshot);
-        const scoresRaw = await getScores(
+        const scoresRaw = await getScoresDirect(
           space.key,
           space.strategies,
           space.network,
@@ -639,7 +639,7 @@ const actions = {
         const addressHex = new HarmonyAddress(address).checksum;
         const blockTag = snapshot > blockNumber ? 'latest' : parseInt(snapshot);
         console.log('blockTag: ', blockTag);
-        scores = await getScores(
+        scores = await getScoresDirect(
           space.key,
           space.strategies,
           space.network,
