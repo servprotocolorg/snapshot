@@ -384,6 +384,7 @@ export default {
     },
     async loadPower() {
       if (!this.web3.account || !this.proposal.address) return;
+      this.loaded = false;
       const { scores, totalScore } = await this.getPower({
         space: this.space,
         address: this.web3.account,
@@ -391,6 +392,7 @@ export default {
       });
       this.totalScore = totalScore;
       this.scores = scores;
+      this.loaded = true;
       console.log('totalScore:', this.totalScore);
     },
     async deleteProposal() {
