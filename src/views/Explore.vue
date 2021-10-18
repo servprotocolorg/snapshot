@@ -59,7 +59,7 @@
 </template>
 
 <script>
-  import networks from '@/helpers/networks.json';
+import networks from '@/helpers/networks.json';
 import plugins from '@snapshot-labs/snapshot.js/src/plugins';
 import strategies from '@/helpers/strategies';
 import skins from '@/helpers/skins';

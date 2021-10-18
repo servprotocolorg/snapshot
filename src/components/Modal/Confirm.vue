@@ -1,11 +1,22 @@
+<script setup>
+import VOTING_TYPES from '@/helpers/votingTypes';
+</script>
 <template>
   <UiModal :open="open" v-if="open" @close="$emit('close')" class="d-flex">
     <template v-slot:header>
       <h3>Confirm vote</h3>
     </template>
     <div class="d-flex flex-column flex-auto">
+      <h4
+        class="m-4 mb-0 text-center"
+        v-if="proposal.msg.payload.metadata.voting"
+      >
+        Voting using
+        {{ `${VOTING_TYPES[proposal.msg.payload.metadata.voting]}` }}
+      </h4>
       <h4 class="m-4 mb-0 text-center">
-        Are you sure you want to vote {{
+        Are you sure you want to vote
+        {{
           selectedChoiceSet.length === 1
             ? '"' + proposal.msg.payload.choices[selectedChoice - 1] + '"'
             : 'them'
@@ -84,14 +95,16 @@ export default {
     'proposal',
     'id',
     'selectedChoice',
+    'selectedChoices',
     'snapshot',
     'totalScore',
     'scores'
   ],
   emits: ['reload', 'close'],
   data() {
+    console.log('this is', this, this.selectedChoices);
     return {
-      loading: false,
+      loading: false
     };
   },
   computed: {
@@ -107,6 +120,10 @@ export default {
       );
     },
     selectedChoiceSet() {
+      console.log('selected', this.selectedChoices);
+      if (this.selectedChoices?.length > 0) {
+        return this.selectedChoices;
+      }
       return this.selectedChoice.split('-');
     }
   },

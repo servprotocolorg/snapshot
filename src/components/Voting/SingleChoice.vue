@@ -1,0 +1,62 @@
+<template>
+  <div class="mb-3">
+    <UiButton
+      v-for="(choice, i) in payload?.choices"
+      :key="i"
+      @click="selectChoice(i + 1)"
+      class="block width-full mb-2"
+      :class="selectedChoices.includes(i + 1) && 'button--active'"
+    >
+      {{ _shorten(choice, 32) }}
+    </UiButton>
+  </div>
+</template>
+<script>
+import { ref } from 'vue';
+
+const selectedChoices = ref([]);
+
+export default {
+  props: ['proposal', 'maxCanSelect'],
+  emits: ['selectChoice'],
+  data() {
+    return {
+      selectedChoices: selectedChoices
+    };
+  },
+  computed: {
+    payload() {
+      return this.proposal?.msg?.payload || [];
+    }
+  },
+  methods: {
+    selectChoice(i) {
+      if (selectedChoices.value.indexOf(i) >= 0) {
+        this.removeChoice(selectedChoices.value.indexOf(i));
+      } else {
+        if (
+          this.maxCanSelect &&
+          this.maxCanSelect > 1 &&
+          this.maxCanSelect <= selectedChoices.value.length
+        ) {
+          return; // cannot select more than the marked max selection
+        }
+        if (!this.maxCanSelect || this.maxCanSelect <= 1) {
+          selectedChoices.value.splice(0, selectedChoices.value.length);
+        }
+        selectedChoices.value.push(i);
+      }
+      console.log(selectedChoices);
+      this.$emit('selectChoice', selectedChoices);
+    },
+    removeChoice(i) {
+      console.log('Remove choice', i);
+      selectedChoices.value.splice(i, 1);
+    },
+    updateChoices() {
+      console.log('selectedChoices', selectedChoices);
+      this.$emit('selectChoice', selectedChoices);
+    }
+  }
+};
+</script>

@@ -1,6 +1,6 @@
 import { getProfiles } from '@/helpers/3box';
 import { getInstance } from '@snapshot-labs/lock/plugins/vue3';
-import { ipfsGet, getScores, getScoresDirect } from '@snapshot-labs/snapshot.js/src/utils';
+import { ipfsGet, getScoresDirect } from '@snapshot-labs/snapshot.js/src/utils';
 import {
   getBlockNumber,
   signMessage
@@ -115,8 +115,6 @@ const mutations = {
 
 const actions = {
   init: async ({ commit, dispatch }) => {
-    const auth = getInstance();
-
     commit('SET', { loading: true });
     await dispatch('getSpaces');
     commit('SET', { loading: false, init: true });
@@ -291,6 +289,7 @@ const actions = {
       commit('GET_PROPOSALS_SUCCESS');
       return formatProposals(proposals);
     } catch (e) {
+      console.log('errors', e);
       commit('GET_PROPOSALS_FAILURE', e);
     }
   },
@@ -441,7 +440,9 @@ const actions = {
                 return {
                   ...acc,
                   [addr]: validator
-                    ? Number(ones(validator.totalStake || validator.total_stake))
+                    ? Number(
+                        ones(validator.totalStake || validator.total_stake)
+                      )
                     : Number(ones(0))
                 };
               }
@@ -536,7 +537,10 @@ const actions = {
 
       /* Get results */
       let votesResult: any[] = [];
-      if (['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1 || state.harmonyDaoSpace.indexOf(space.key) > -1) {
+      if (
+        ['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1 ||
+        state.harmonyDaoSpace.indexOf(space.key) > -1
+      ) {
         for (const address in votes) {
           const choices = String(votes[address].msg.payload.choice).split('-');
 
@@ -580,6 +584,7 @@ const actions = {
         totalSupply: totalSupply
       };
       commit('GET_PROPOSAL_SUCCESS');
+      console.log(proposal, votes, results);
       return { proposal, votes, results };
     } catch (e) {
       commit('GET_PROPOSAL_FAILURE', e);
@@ -624,7 +629,14 @@ const actions = {
         );
 
         const totalScores: any = scoresSet.reduce((a, b: any) => a + b, 0);
-        console.log('totalScores:', totalScores, 'scoresSet:', scoresSet, 'space.filters.minScore:', space.filters.minScore);
+        console.log(
+          'totalScores:',
+          totalScores,
+          'scoresSet:',
+          scoresSet,
+          'space.filters.minScore:',
+          space.filters.minScore
+        );
         if (space.filters.minScore) {
           if (totalScores >= space.filters.minScore) {
             scores = [1];

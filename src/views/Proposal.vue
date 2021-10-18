@@ -1,3 +1,7 @@
+<script setup>
+import VOTING_TYPES from '@/helpers/votingTypes';
+</script>
+
 <template>
   <Container :slim="true">
     <div class="px-4 px-md-0 mb-3">
@@ -34,14 +38,14 @@
           </template>
           <PageLoading v-else />
         </div>
-        <Block
+        <!-- <Block
           v-if="
             loaded && ts >= payload.start && ts < payload.end && canVoteProposal
           "
           class="mb-4"
           title="Cast your vote"
-        >
-          <div class="mb-3">
+        > -->
+        <!-- <div class="mb-3">
             <UiButton
               v-for="(choice, i) in payload.choices"
               :key="i"
@@ -53,38 +57,52 @@
               <a
                 v-if="payload.metadata.plugins?.aragon?.choice?.[i + 1]"
                 @click="modalOpen = true"
-                :aria-label="
-                  `Target address: ${
-                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                      .to
-                  }\nValue: ${
-                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                      .value
-                  }\nData: ${
-                    payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                      .data
-                  }`
-                "
+                :aria-label="`Target address: ${
+                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                    .to
+                }\nValue: ${
+                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                    .value
+                }\nData: ${
+                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
+                    .data
+                }`"
                 class="tooltipped tooltipped-n break-word"
               >
                 <Icon name="warning" class="v-align-middle ml-1" />
               </a>
             </UiButton>
-          </div>
-          <UiButton
+          </div> -->
+
+        <BlockCastVote
+          v-if="!voteLoading"
+          :proposal="proposal"
+          :web3="web3"
+          v-model="selectedChoices"
+          @open="modalOpen = true"
+          @clickVote="clickVote"
+        />
+
+        <!-- <VotingRankedChoice
+            v-if="payload.metadata.voting === 'ranked-choice'"
+            :proposal="proposal"
+            v-model="selectedChoices"
+            @selectChoice="selectedChoices"
+          /> -->
+        <!-- <UiButton
             :disabled="
-                voteLoading ||
-                !selectedChoice ||
-                !web3.account ||
-                selectedChoiceSet.length > payload.maxCanSelect
+              voteLoading ||
+              !selectedChoice ||
+              !web3.account ||
+              selectedChoiceSet.length > payload.maxCanSelect
             "
             :loading="voteLoading"
             @click="modalOpen = true"
             class="d-block width-full button--submit"
           >
             Vote
-          </UiButton>
-        </Block>
+          </UiButton> -->
+        <!-- </Block> -->
         <BlockVotes
           v-if="loaded"
           :space="space"
@@ -137,6 +155,20 @@
               <Icon name="external-link" class="ml-1" />
             </a>
           </div>
+          <div class="mb-1">
+            <b>Voting Type</b>
+
+            <span
+              class="float-right text-white tooltipped tooltipped-n"
+              v-if="!payload.metadata.voting"
+              >Single choice voting</span
+            >
+            <span
+              class="float-right text-white tooltipped tooltipped-n"
+              v-else
+              v-text="`${VOTING_TYPES[payload.metadata.voting]}`"
+            />
+          </div>
           <div>
             <div class="mb-1">
               <b>Start date</b>
@@ -168,14 +200,14 @@
             <div class="mb-1" v-if="payload.maxCanSelect > 1">
               <b>Max selections</b>
               <span class="float-right text-white">{{
-                  payload.maxCanSelect
-                }}</span>
+                payload.maxCanSelect
+              }}</span>
             </div>
             <div class="mb-1" v-if="minTokenAmount > 0">
               <b>Min token amount</b>
               <span class="float-right text-white">{{
-                  minTokenAmount+" "+space.symbol
-                }}</span>
+                minTokenAmount + ' ' + space.symbol
+              }}</span>
             </div>
             <template v-if="isHarmonySpace">
               <div class="mb-1" v-if="epoch.length">
@@ -184,7 +216,8 @@
                   :aria-label="epoch"
                   :v-text="epoch"
                   class="float-right text-white tooltipped tooltipped-n"
-                >{{ epoch }}</span>
+                  >{{ epoch }}</span
+                >
               </div>
 
               <div class="mb-1" v-if="false">
@@ -259,6 +292,7 @@
         :proposal="proposal"
         :id="id"
         :selectedChoice="selectedChoice"
+        :selectedChoices="selectedChoices"
         :totalScore="totalScore"
         :scores="scores"
         :snapshot="payload.snapshot"
@@ -277,7 +311,6 @@
 import { mapActions, mapState } from 'vuex';
 import { isAddressEqual } from '@/helpers/utils';
 import { HarmonyAddress } from '@harmony-js/crypto';
-
 export default {
   data() {
     return {
@@ -292,6 +325,7 @@ export default {
       modalOpen: false,
       modalStrategiesOpen: false,
       selectedChoice: '',
+      selectedChoices: [],
       selectedChoiceSet: [],
       totalScore: 0,
       scores: [],
@@ -324,24 +358,27 @@ export default {
     },
     canVoteProposal() {
       if (!this.web3.account) {
+        console.log('Cannot vote, no account');
         return false;
       }
-
       if (this.totalScore <= 0) {
+        console.log('Cannot vote, score 0');
         return false;
       }
-
       const isUserVoted = Object.keys(this.votes || {}).some(address =>
         isAddressEqual(address, this.web3.account)
       );
-
       if (this.isHarmonySpace || this.isDao) {
         const iAmValidator = !!this.app.validators.find(v =>
           isAddressEqual(v.address, this.web3.account)
         );
-
+        console.log(
+          'is user voted and i am validator?',
+          iAmValidator && !isUserVoted
+        );
         return iAmValidator && !isUserVoted;
       } else {
+        console.log('Can potentially vote', !isUserVoted);
         return !isUserVoted;
       }
     },
@@ -382,6 +419,10 @@ export default {
       this.results = proposalObj.results;
       console.log('proposalObj:', proposalObj);
     },
+    clickVote() {
+      console.log('Vote clicked');
+      this.modalOpen = true;
+    },
     async loadPower() {
       if (!this.web3.account || !this.proposal.address) return;
       this.loaded = false;
@@ -407,8 +448,11 @@ export default {
     initValidatorName() {
       if (this.isHarmonySpace) {
         this.app.validators.forEach(item => {
-          this.validatorNames[new HarmonyAddress(item.address).bech32] = item.name;
-          this.validatorNames[(new HarmonyAddress(item.address).checksum).toLowerCase()] = item.name;
+          this.validatorNames[new HarmonyAddress(item.address).bech32] =
+            item.name;
+          this.validatorNames[
+            new HarmonyAddress(item.address).checksum.toLowerCase()
+          ] = item.name;
         });
       }
     },

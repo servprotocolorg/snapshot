@@ -13,7 +13,12 @@
       <a href="https://harmony.one/telegram" target="_blank">
         <Icon size="32" name="telegram" class="mr-1 mx-2" />
       </a>
-      <a :href="`https://github.com/harmony-one/snapshot/tree/harmony-governance`" target="_blank">
+      <a
+        :href="
+          `https://github.com/harmony-one/snapshot/tree/harmony-governance`
+        "
+        target="_blank"
+      >
         <Icon size="32" name="github" class="mr-1 mx-2" />
       </a>
     </div>
@@ -36,7 +41,6 @@
       <div class="d-flex">
         <span v-text="'Network'" class="flex-auto text-gray mr-1" />
         <a :href="web3.network.explorer" target="_blank">
-<!--          {{ web3.network.network }} ({{ web3.network.key }})-->
           Harmony
         </a>
       </div>

@@ -24,8 +24,12 @@
       />
       <div
         v-text="
-            canMultiOptions ? getMultiChoice(vote.msg.payload.choice)
-            : _shorten(proposal.msg.payload.choices[vote.msg.payload.choice - 1], 'choice-long')
+          canMultiOptions
+            ? getMultiChoice(vote.msg.payload.choice)
+            : _shorten(
+                proposal.msg.payload.choices[vote.msg.payload.choice - 1],
+                'choice-long'
+              )
         "
         class="flex-auto text-center text-white"
       />
@@ -38,11 +42,11 @@
               .join(' + ')
           "
         >
-          <template v-if="isCalcByCount">
-            {{ vote.voteCount }} Vote
-          </template>
+          <template v-if="isCalcByCount"> {{ vote.voteCount }} Vote </template>
           <template v-else>
-            {{ `${_numeral(vote.balance)} ${_shorten(space.symbol, 'symbol')}` }}
+            {{
+              `${_numeral(vote.balance)} ${_shorten(space.symbol, 'symbol')}`
+            }}
           </template>
         </span>
         <a
@@ -90,8 +94,8 @@ export default {
       return this.showAllVotes
         ? this.sortVotesUserFirst()
         : Object.fromEntries(
-          Object.entries(this.sortVotesUserFirst()).slice(0, 10)
-        );
+            Object.entries(this.sortVotesUserFirst()).slice(0, 10)
+          );
     },
     titles() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
@@ -100,10 +104,14 @@ export default {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
     },
     canMultiOptions() {
-      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1);
+      return (
+        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+      );
     },
     isCalcByCount() {
-      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1);
+      return (
+        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+      );
     },
     voteResult() {
       if (this.canMultiOptions) {
@@ -111,7 +119,7 @@ export default {
         // re-cal vote power by count of choice
         for (const address in this.votes) {
           const vote = this.votes[address];
-          vote.voteCount = (String(vote.msg.payload.choice).split('-')).length;
+          vote.voteCount = String(vote.msg.payload.choice).split('-').length;
           result.push(vote);
         }
         return result;
@@ -128,7 +136,10 @@ export default {
     },
     sortVotesUserFirst() {
       if (Object.keys(this.voteResult).includes(this.web3.account)) {
-        const { [[this.web3.account]]: firstKeyValue, ...rest } = this.voteResult;
+        const {
+          [[this.web3.account]]: firstKeyValue,
+          ...rest
+        } = this.voteResult;
         return {
           [[this.web3.account]]: firstKeyValue,
           ...rest

@@ -14,11 +14,7 @@
       <span v-text="`#${i.slice(0, 7)}`" />
       By {{ _shorten(proposal.address) }}
       <Badges :address="proposal.address" :space="space" class="ml-n1" />
-      <span
-        v-if="isDao"
-        class="ml-1"
-        v-text="`${proposal.score} Votes`"
-      />
+      <span v-if="isDao" class="ml-1" v-text="`${proposal.score} Votes`" />
       <span
         v-else
         class="ml-1"

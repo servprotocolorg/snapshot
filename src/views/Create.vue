@@ -1,3 +1,6 @@
+<script setup>
+import VOTING_TYPES from '@/helpers/votingTypes';
+</script>
 <template>
   <Container :slim="true">
     <div class="px-4 px-md-0 mb-3">
@@ -44,7 +47,7 @@
               :component-data="{ name: 'list' }"
               item-key="id"
             >
-              <template #item="{element, index}">
+              <template #item="{ element, index }">
                 <div class="d-flex mb-2">
                   <UiButton class="d-flex width-full">
                     <span class="mr-4">{{ index + 1 }}</span>
@@ -99,6 +102,15 @@
 
             <div v-else>
               <UiButton
+                @click="
+                  [(modalVotingTypeOpen = true), (selectedDate = 'start')]
+                "
+                class="width-full mb-2"
+              >
+                <span v-if="!form.metadata.voting">Select Voting System</span>
+                <span v-else v-text="`${VOTING_TYPES[form.metadata.voting]}`" />
+              </UiButton>
+              <UiButton
                 @click="[(modalOpen = true), (selectedDate = 'start')]"
                 class="width-full mb-2"
               >
@@ -121,7 +133,7 @@
                 placeholder="Snapshot block number"
               />
             </UiButton>
-            <UiButton class="width-full mb-2"  v-if="canMultiOptions">
+            <UiButton class="width-full mb-2" v-if="canMultiOptions">
               <input
                 v-model="form.maxCanSelect"
                 type="number"
@@ -155,6 +167,11 @@
         v-model="form.metadata.plugins"
         :open="modalPluginsOpen"
         @close="modalPluginsOpen = false"
+      />
+      <ModalVotingType
+        :open="modalVotingTypeOpen"
+        @close="modalVotingTypeOpen = false"
+        v-model="form.metadata.voting"
       />
     </teleport>
   </Container>
@@ -196,6 +213,7 @@ export default {
       },
       modalOpen: false,
       modalPluginsOpen: false,
+      modalVotingTypeOpen: false,
       selectedDate: '',
       counter: 0
     };
@@ -208,7 +226,7 @@ export default {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.key) > -1;
     },
     canMultiOptions() {
-      return (this.isDao || this.app.harmonyDaoSpace.indexOf(this.key) > -1);
+      return this.isDao || this.app.harmonyDaoSpace.indexOf(this.key) > -1;
     },
     isValid() {
       // const ts = (Date.now() / 1e3).toFixed();
@@ -231,6 +249,7 @@ export default {
     }
   },
   async mounted() {
+    console.log(VOTING_TYPES);
     this.$refs.nameForm.focus();
     this.addChoice(2);
 

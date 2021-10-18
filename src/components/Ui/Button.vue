@@ -16,7 +16,7 @@ export default {
   props: {
     loading: Boolean,
     type: String,
-    style: Object,
+    style: Object
   },
   emits: ['click']
 };

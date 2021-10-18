@@ -16,7 +16,7 @@
 </template>
 
 <script>
-  import networks from '@/helpers/networks.json';
+import networks from '@/helpers/networks.json';
 import { filterNetworks } from '@/helpers/utils';
 
 export default {
