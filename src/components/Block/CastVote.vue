@@ -62,7 +62,7 @@ import VOTING_TYPES from '@/helpers/votingTypes';
       />
     </div>
     <UiButton
-      :disabled="web3.authLoading || selectedChoices < 1"
+      :disabled="web3.authLoading"
       @click="clickVote"
       class="block width-full button--submit"
     >
