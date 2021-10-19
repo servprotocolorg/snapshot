@@ -81,6 +81,7 @@ export default {
       return this.proposal?.msg?.payload;
     },
     selectedChoices() {
+      console.log('Computing model value', this.modelValue);
       if (Array.isArray(this.modelValue)) return this.modelValue.length;
       if (typeof this.modelValue === 'object' && this.modelValue !== null)
         return Object.keys(this.modelValue).length;
