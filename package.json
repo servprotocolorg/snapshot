@@ -24,7 +24,7 @@
     "@primer/css": "^14.4.0",
     "@snapshot-labs/lock": "github:snapshot-labs/lock#master",
     "@snapshot-labs/snapshot-spaces": "github:harmony-one/snapshot-spaces#master",
-    "@snapshot-labs/snapshot.js": "github:harmony-one/snapshot.js#v0.1.12",
+    "@snapshot-labs/snapshot.js": "github:harmony-one/snapshot.js#v0.1.13",
     "@toruslabs/torus-embed": "^1.9.2",
     "@vue/cli-plugin-babel": "^4.4.0",
     "@vue/cli-plugin-eslint": "^4.4.0",
