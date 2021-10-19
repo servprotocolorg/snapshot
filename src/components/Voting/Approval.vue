@@ -22,7 +22,9 @@ export default {
       selectedChoices: selectedChoices
     };
   },
-
+  beforeMount() {
+    selectedChoices.value.splice(0, selectedChoices.value.length);
+  },
   computed: {
     payload() {
       return this.proposal?.msg?.payload || [];
@@ -39,9 +41,6 @@ export default {
           this.maxCanSelect <= selectedChoices.value.length
         ) {
           return; // cannot select more than the marked max selection
-        }
-        if (!this.maxCanSelect || this.maxCanSelect <= 1) {
-          selectedChoices.value.splice(0, selectedChoices.value.length);
         }
         selectedChoices.value.push(i);
       }

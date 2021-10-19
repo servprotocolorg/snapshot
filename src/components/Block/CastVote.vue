@@ -40,14 +40,18 @@ import VOTING_TYPES from '@/helpers/votingTypes';
       />
       <VotingApproval
         v-if="
-          payload?.metadata?.voting === 'approval' || !payload?.metadata?.voting
+          payload?.metadata?.voting === 'approval' ||
+            (!payload?.metadata?.voting && +payload?.maxCanSelect > 1)
         "
         :proposal="proposal"
         :maxCanSelect="+payload?.maxCanSelect > 1 ? +payload?.maxCanSelect : 0"
         @selectChoice="emitChoice"
       />
       <VotingSingleChoice
-        v-if="payload?.metadata?.voting === 'single-choice'"
+        v-if="
+          payload?.metadata?.voting === 'single-choice' ||
+            (!payload?.metadata?.voting && +payload?.maxCanSelect <= 1)
+        "
         :proposal="proposal"
         @selectChoice="emitChoice"
       />

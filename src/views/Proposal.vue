@@ -39,7 +39,9 @@ import VOTING_TYPES from '@/helpers/votingTypes';
           <PageLoading v-else />
         </div>
         <BlockCastVote
-          v-if="!voteLoading"
+          v-if="
+            loaded && ts >= payload.start && ts < payload.end && canVoteProposal
+          "
           :proposal="proposal"
           :web3="web3"
           v-model="selectedChoices"

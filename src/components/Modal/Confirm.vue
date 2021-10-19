@@ -20,7 +20,7 @@ const format = getChoiceString;
         Are you sure you want to vote
         {{
           selectedChoiceSet.length === 1
-            ? '"' + proposal.msg.payload.choices[selectedChoice - 1] + '"'
+            ? '"' + format(proposal.msg.payload, selectedChoices) + '"'
             : 'them'
         }}? <br />This action <b>cannot</b> be undone.
       </h4>
@@ -102,12 +102,14 @@ export default {
   ],
   emits: ['reload', 'close'],
   data() {
-    console.log('this is', this, this.selectedChoices);
     return {
       loading: false
     };
   },
   computed: {
+    choices() {
+      return this.proposal.msg.payload.choices;
+    },
     symbols() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
     },
@@ -120,7 +122,10 @@ export default {
       );
     },
     selectedChoiceSet() {
-      if (this.selectedChoices?.length > 0) {
+      if (
+        Array.isArray(this.selectedChoices) &&
+        this.selectedChoices?.length > 0
+      ) {
         return this.selectedChoices;
       } else if (typeof this.selectedChoices === 'object') {
         return this.selectedChoices;
@@ -132,11 +137,14 @@ export default {
     ...mapActions(['send']),
     async handleSubmit() {
       let choice = this.selectedChoice;
+      console.log(this.selectedChoices);
       if (!choice || choice.length === 0) {
-        if (typeof this.selectedChoices === 'object') {
+        if (Array.isArray(this.selectedChoices)) {
+          choice = this.selectedChoices.join('-');
+        } else if (typeof this.selectedChoices === 'object') {
           choice = this.selectedChoices;
         } else {
-          choice = this.selectedChoices.join('-');
+          choice = [this.selectedChoices];
         }
       }
       this.loading = true;
