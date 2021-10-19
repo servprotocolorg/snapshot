@@ -62,7 +62,7 @@ import VOTING_TYPES from '@/helpers/votingTypes';
       />
     </div>
     <UiButton
-      :disabled="web3.authLoading"
+      :disabled="web3.authLoading || selectedChoices < 1"
       @click="clickVote"
       class="block width-full button--submit"
     >
@@ -81,7 +81,6 @@ export default {
       return this.proposal?.msg?.payload;
     },
     selectedChoices() {
-      console.log('Computing model value', this.modelValue);
       if (Array.isArray(this.modelValue)) return this.modelValue.length;
       if (typeof this.modelValue === 'object' && this.modelValue !== null)
         return Object.keys(this.modelValue).length;

@@ -407,6 +407,7 @@ export default {
       } else {
         this.selectedChoiceSet.push(id);
       }
+      console.log("Option selected", id);
       this.selectedChoice = this.selectedChoiceSet.join('-');
     }
   },
