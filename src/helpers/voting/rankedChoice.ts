@@ -54,7 +54,11 @@ function irv(ballots, rounds) {
 
 function getFinalRound(i, votes) {
   const results = irv(
-    votes.map((vote: any) => [vote.choice, vote.balance, vote.scores]),
+    votes.map((vote: any) => [
+      vote.msg.payload.choice.split('-'),
+      vote.balance,
+      vote.scores
+    ]),
     []
   );
   const finalRound = results[results.length - 1];
@@ -81,6 +85,7 @@ export default class ApprovalVoting {
   }
 
   resultsByStrategyScore() {
+    console.log(this.votes);
     return this.proposal.choices.map((choice, i) =>
       this.strategies.map((strategy, sI) => {
         return getFinalRound(i, this.votes).reduce(

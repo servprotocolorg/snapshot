@@ -8,6 +8,7 @@ import {
 import getProvider from '@/helpers/provider';
 import gateways from '@snapshot-labs/snapshot.js/src/gateways.json';
 import client from '@/helpers/client';
+import voting from '@/helpers/voting';
 import {
   formatProposal,
   formatProposals,
@@ -554,7 +555,13 @@ const actions = {
       } else {
         votesResult = votes;
       }
-
+      const type = proposal.msg.payload.metadata.voting || 'approval';
+      const strategies = proposal.strategies ?? space.strategies;
+      const votingClass = new voting[type](
+        proposal.msg.payload,
+        Object.values(votesResult),
+        strategies
+      );
       const results = {
         totalStaked: ones(totalStaked).toFixed(0),
         totalVotes: proposal.msg.payload.choices.map(
@@ -563,24 +570,30 @@ const actions = {
               (vote: any) => parseInt(vote.msg.payload.choice) === i + 1
             ).length
         ),
-        totalBalances: proposal.msg.payload.choices.map((choice, i) =>
-          Object.values(votesResult)
-            .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
-            .reduce((a, b: any) => a + b.balance, 0)
-        ),
-        totalScores: proposal.msg.payload.choices.map((choice, i) =>
-          space.strategies.map((strategy, sI) =>
-            Object.values(votesResult)
-              .filter(
-                (vote: any) => parseInt(vote.msg.payload.choice) === i + 1
-              )
-              .reduce((a, b: any) => a + b.scores[sI], 0)
-          )
-        ),
-        totalVotesBalances: Object.values(votesResult).reduce(
-          (a, b: any) => a + b.balance,
-          0
-        ),
+        // resultsByVoteBalance
+        totalBalances: votingClass.resultsByVoteBalance(),
+        // proposal.msg.payload.choices.map((choice, i) =>
+        //   Object.values(votesResult)
+        //     .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
+        //     .reduce((a, b: any) => a + b.balance, 0)
+        // ),
+        // resultsByStrategyScore
+        totalScores: votingClass.resultsByStrategyScore(),
+        // proposal.msg.payload.choices.map((choice, i) =>
+        //   space.strategies.map((strategy, sI) =>
+        //     Object.values(votesResult)
+        //       .filter(
+        //         (vote: any) => parseInt(vote.msg.payload.choice) === i + 1
+        //       )
+        //       .reduce((a, b: any) => a + b.scores[sI], 0)
+        //   )
+        // ),
+        // sumOfResultsBalance
+        totalVotesBalances: votingClass.sumOfResultsBalance(),
+        // Object.values(votesResult).reduce(
+        //   (a, b: any) => a + b.balance,
+        //   0
+        // ),
         totalSupply: totalSupply
       };
       commit('GET_PROPOSAL_SUCCESS');

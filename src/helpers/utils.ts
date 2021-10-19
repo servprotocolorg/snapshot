@@ -1,9 +1,17 @@
 import pkg from '@/../package.json';
 import BigNumber from 'bignumber.js';
 import { HarmonyAddress } from '@harmony-js/crypto';
+import voting from '@/helpers/voting';
 
 export function shorten(str = '') {
   return `${str.slice(0, 6)}...${str.slice(str.length - 4)}`;
+}
+
+export function getChoiceString(proposal, selected) {
+  const type = proposal?.metadata?.voting ?? 'single-choice';
+  console.log(type, selected);
+  const votingClass = new voting[type](proposal, '', '', selected);
+  return votingClass.getChoiceString();
 }
 
 export function getNumberWithOrdinal(n) {

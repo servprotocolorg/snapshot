@@ -38,42 +38,6 @@ import VOTING_TYPES from '@/helpers/votingTypes';
           </template>
           <PageLoading v-else />
         </div>
-        <!-- <Block
-          v-if="
-            loaded && ts >= payload.start && ts < payload.end && canVoteProposal
-          "
-          class="mb-4"
-          title="Cast your vote"
-        > -->
-        <!-- <div class="mb-3">
-            <UiButton
-              v-for="(choice, i) in payload.choices"
-              :key="i"
-              @click="selectOption(i + 1)"
-              class="d-block width-full mb-2"
-              :class="selectedChoiceSet.indexOf(i + 1) > -1 && 'button--active'"
-            >
-              {{ _shorten(choice, 32) }}
-              <a
-                v-if="payload.metadata.plugins?.aragon?.choice?.[i + 1]"
-                @click="modalOpen = true"
-                :aria-label="`Target address: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .to
-                }\nValue: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .value
-                }\nData: ${
-                  payload.metadata.plugins.aragon[`choice${i + 1}`].actions[0]
-                    .data
-                }`"
-                class="tooltipped tooltipped-n break-word"
-              >
-                <Icon name="warning" class="v-align-middle ml-1" />
-              </a>
-            </UiButton>
-          </div> -->
-
         <BlockCastVote
           v-if="!voteLoading"
           :proposal="proposal"
@@ -82,27 +46,6 @@ import VOTING_TYPES from '@/helpers/votingTypes';
           @open="modalOpen = true"
           @clickVote="clickVote"
         />
-
-        <!-- <VotingRankedChoice
-            v-if="payload.metadata.voting === 'ranked-choice'"
-            :proposal="proposal"
-            v-model="selectedChoices"
-            @selectChoice="selectedChoices"
-          /> -->
-        <!-- <UiButton
-            :disabled="
-              voteLoading ||
-              !selectedChoice ||
-              !web3.account ||
-              selectedChoiceSet.length > payload.maxCanSelect
-            "
-            :loading="voteLoading"
-            @click="modalOpen = true"
-            class="d-block width-full button--submit"
-          >
-            Vote
-          </UiButton> -->
-        <!-- </Block> -->
         <BlockVotes
           v-if="loaded"
           :space="space"

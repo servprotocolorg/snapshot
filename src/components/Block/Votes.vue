@@ -114,6 +114,7 @@ export default {
       );
     },
     voteResult() {
+      console.log(this.votes, this.canMultiOptions);
       if (this.canMultiOptions) {
         const result = [];
         // re-cal vote power by count of choice

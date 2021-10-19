@@ -27,7 +27,7 @@ export default class ApprovalVoting {
     const results = this.proposal.choices
       .map((choice, i) =>
         this.votes
-          .map(vote => quadraticMath(i, vote.choice, vote.balance))
+          .map(vote => quadraticMath(i, vote.msg.payload.choice, vote.balance))
           .reduce((a, b: any) => a + b, 0)
       )
       .map(sqrt => sqrt * sqrt);
@@ -42,7 +42,9 @@ export default class ApprovalVoting {
       .map((choice, i) =>
         this.strategies.map((strategy, sI) =>
           this.votes
-            .map(vote => quadraticMath(i, vote.choice, vote.scores[sI]))
+            .map(vote =>
+              quadraticMath(i, vote.msg.payload.choice, vote.scores[sI])
+            )
             .reduce((a, b: any) => a + b, 0)
         )
       )
@@ -65,15 +67,13 @@ export default class ApprovalVoting {
     return this.proposal.choices
       .map((choice, i) => {
         if (this.selected[i + 1]) {
-          return `${
-            Math.round(
-              percentageOfTotal(
-                i + 1,
-                this.selected,
-                Object.values(this.selected)
-              ) * 10
-            ) / 10
-          }% for ${choice}`;
+          return `${Math.round(
+            percentageOfTotal(
+              i + 1,
+              this.selected,
+              Object.values(this.selected)
+            ) * 10
+          ) / 10}% for ${choice}`;
         }
       })
       .filter(el => el != null)

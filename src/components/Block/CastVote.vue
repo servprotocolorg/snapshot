@@ -17,25 +17,38 @@ import VOTING_TYPES from '@/helpers/votingTypes';
       :body="`${VOTING_TYPES.description[payload?.metadata?.voting]}`"
       class="mb-6"
     />
+    <UiMarkdown
+      v-else-if="payload?.maxCanSelect && +payload?.maxCanSelect > 1"
+      :body="
+        `Select up to ${payload?.maxCanSelect} options from the list of choices`
+      "
+      class="mb-6"
+    />
+    <UiMarkdown
+      v-else
+      :body="`Select an option from the list of choices`"
+      class="mb-6"
+    />
     <div class="mb-3">
-      <!-- 
-      <VotingApproval
-        v-if="proposal.type === 'approval'"
+      <VotingQuadratic
+        v-if="
+          payload?.metadata?.voting === 'quadratic' ||
+            payload?.metadata?.voting === 'weighted'
+        "
         :proposal="proposal"
         @selectChoice="emitChoice"
       />
-      <VotingQuadratic
-        v-if="proposal.type === 'quadratic' || proposal.type === 'weighted'"
-        :proposal="proposal"
-        @selectChoice="emitChoice"
-      /> -->
-      <VotingSingleChoice
+      <VotingApproval
         v-if="
-          payload?.metadata?.voting === 'single-choice' ||
-            !payload?.metadata?.voting
+          payload?.metadata?.voting === 'approval' || !payload?.metadata?.voting
         "
         :proposal="proposal"
-        :maxCanSelect="+payload?.maxCanSelect"
+        :maxCanSelect="+payload?.maxCanSelect > 1 ? +payload?.maxCanSelect : 0"
+        @selectChoice="emitChoice"
+      />
+      <VotingSingleChoice
+        v-if="payload?.metadata?.voting === 'single-choice'"
+        :proposal="proposal"
         @selectChoice="emitChoice"
       />
       <VotingRankedChoice

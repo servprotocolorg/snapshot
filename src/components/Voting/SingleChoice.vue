@@ -5,7 +5,7 @@
       :key="i"
       @click="selectChoice(i + 1)"
       class="block width-full mb-2"
-      :class="selectedChoices.includes(i + 1) && 'button--active'"
+      :class="selectedChoice === i + 1 && 'button--active'"
     >
       {{ _shorten(choice, 32) }}
     </UiButton>
@@ -13,15 +13,13 @@
 </template>
 <script>
 import { ref } from 'vue';
-
-const selectedChoices = ref([]);
-
+const selectedChoice = ref(null);
 export default {
-  props: ['proposal', 'maxCanSelect'],
+  props: ['proposal'],
   emits: ['selectChoice'],
   data() {
     return {
-      selectedChoices: selectedChoices
+      selectedChoice: selectedChoice
     };
   },
   computed: {
@@ -31,31 +29,8 @@ export default {
   },
   methods: {
     selectChoice(i) {
-      if (selectedChoices.value.indexOf(i) >= 0) {
-        this.removeChoice(selectedChoices.value.indexOf(i));
-      } else {
-        if (
-          this.maxCanSelect &&
-          this.maxCanSelect > 1 &&
-          this.maxCanSelect <= selectedChoices.value.length
-        ) {
-          return; // cannot select more than the marked max selection
-        }
-        if (!this.maxCanSelect || this.maxCanSelect <= 1) {
-          selectedChoices.value.splice(0, selectedChoices.value.length);
-        }
-        selectedChoices.value.push(i);
-      }
-      console.log(selectedChoices);
-      this.$emit('selectChoice', selectedChoices);
-    },
-    removeChoice(i) {
-      console.log('Remove choice', i);
-      selectedChoices.value.splice(i, 1);
-    },
-    updateChoices() {
-      console.log('selectedChoices', selectedChoices);
-      this.$emit('selectChoice', selectedChoices);
+      selectedChoice.value = i;
+      this.$emit('selectChoice', i);
     }
   }
 };

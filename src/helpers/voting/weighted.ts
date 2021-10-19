@@ -5,6 +5,7 @@ export function percentageOfTotal(i, values, total) {
 }
 
 export function weightedPower(i, choice, balance) {
+  console.log(choice);
   return (
     (percentageOfTotal(i + 1, choice, Object.values(choice)) / 100) * balance
   );
@@ -26,7 +27,7 @@ export default class WeightedVoting {
   resultsByVoteBalance() {
     const results = this.proposal.choices.map((choice, i) =>
       this.votes
-        .map(vote => weightedPower(i, vote.choice, vote.balance))
+        .map(vote => weightedPower(i, vote.msg.payload.choice, vote.balance))
         .reduce((a, b: any) => a + b, 0)
     );
 
@@ -40,7 +41,9 @@ export default class WeightedVoting {
       .map((choice, i) =>
         this.strategies.map((strategy, sI) =>
           this.votes
-            .map(vote => weightedPower(i, vote.choice, vote.scores[sI]))
+            .map(vote =>
+              weightedPower(i, vote.msg.payload.choice, vote.scores[sI])
+            )
             .reduce((a, b: any) => a + b, 0)
         )
       )
@@ -63,15 +66,13 @@ export default class WeightedVoting {
     return this.proposal.choices
       .map((choice, i) => {
         if (this.selected[i + 1]) {
-          return `${
-            Math.round(
-              percentageOfTotal(
-                i + 1,
-                this.selected,
-                Object.values(this.selected)
-              ) * 10
-            ) / 10
-          }% for ${choice}`;
+          return `${Math.round(
+            percentageOfTotal(
+              i + 1,
+              this.selected,
+              Object.values(this.selected)
+            ) * 10
+          ) / 10}% for ${choice}`;
         }
       })
       .filter(el => el != null)

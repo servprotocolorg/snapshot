@@ -1,5 +1,7 @@
 <script setup>
 import VOTING_TYPES from '@/helpers/votingTypes';
+import { getChoiceString } from '@/helpers/utils';
+const format = getChoiceString;
 </script>
 <template>
   <UiModal :open="open" v-if="open" @close="$emit('close')" class="d-flex">
@@ -25,9 +27,7 @@ import VOTING_TYPES from '@/helpers/votingTypes';
       <div class="m-4 p-4 border rounded-2 text-white">
         <div class="d-flex">
           <span v-text="'Option'" class="flex-auto text-gray mr-1" />
-          <template v-for="choice in selectedChoiceSet">
-            {{ proposal.msg.payload.choices[choice - 1] + '\n' }}
-          </template>
+          {{ format(proposal.msg.payload, selectedChoices) }}
         </div>
         <div class="d-flex">
           <span v-text="'Snapshot'" class="flex-auto text-gray mr-1" />
@@ -120,8 +120,9 @@ export default {
       );
     },
     selectedChoiceSet() {
-      console.log('selected', this.selectedChoices);
       if (this.selectedChoices?.length > 0) {
+        return this.selectedChoices;
+      } else if (typeof this.selectedChoices === 'object') {
         return this.selectedChoices;
       }
       return this.selectedChoice.split('-');
@@ -130,13 +131,21 @@ export default {
   methods: {
     ...mapActions(['send']),
     async handleSubmit() {
+      let choice = this.selectedChoice;
+      if (!choice || choice.length === 0) {
+        if (typeof this.selectedChoices === 'object') {
+          choice = this.selectedChoices;
+        } else {
+          choice = this.selectedChoices.join('-');
+        }
+      }
       this.loading = true;
       await this.send({
         space: this.space.key,
         type: 'vote',
         payload: {
           proposal: this.id,
-          choice: this.selectedChoice,
+          choice: choice,
           metadata: {}
         }
       });
