@@ -5,7 +5,6 @@ export function percentageOfTotal(i, values, total) {
 }
 
 export function weightedPower(i, choice, balance) {
-  console.log(choice);
   return (
     (percentageOfTotal(i + 1, choice, Object.values(choice)) / 100) * balance
   );

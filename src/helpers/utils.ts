@@ -9,7 +9,6 @@ export function shorten(str = '') {
 
 export function getChoiceString(proposal, selected) {
   const type = proposal?.metadata?.voting ?? 'single-choice';
-  console.log(type, selected);
   const votingClass = new voting[type](proposal, '', '', selected);
   return votingClass.getChoiceString();
 }

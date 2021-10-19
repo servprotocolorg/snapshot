@@ -64,15 +64,12 @@ export default {
   methods: {
     selectChoice(i) {
       selectedChoices.value.push(i);
-      console.log(selectedChoices);
       this.$emit('selectChoice', selectedChoices);
     },
     removeChoice(i) {
-      console.log('Remove choice', i);
       selectedChoices.value.splice(i, 1);
     },
     updateChoices() {
-      console.log('selectedChoices', selectedChoices);
       this.$emit('selectChoice', selectedChoices);
     }
   }

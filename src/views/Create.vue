@@ -249,7 +249,6 @@ export default {
     }
   },
   async mounted() {
-    console.log(VOTING_TYPES);
     this.$refs.nameForm.focus();
     this.addChoice(2);
 

@@ -168,7 +168,6 @@ export default {
     this.tab =
       this.$route.params.tab || this.space.filters.defaultTab || this.tab;
     this.proposals = await this.getProposals(this.space);
-    console.log(this.space, this.proposals);
     this.loading = false;
     this.loaded = true;
   }

@@ -137,7 +137,6 @@ export default {
     ...mapActions(['send']),
     async handleSubmit() {
       let choice = this.selectedChoice;
-      console.log(this.selectedChoices);
       if (!choice || choice.length === 0) {
         if (Array.isArray(this.selectedChoices)) {
           choice = this.selectedChoices.join('-');

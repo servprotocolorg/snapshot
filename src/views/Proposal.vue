@@ -365,7 +365,6 @@ export default {
       console.log('proposalObj:', proposalObj);
     },
     clickVote() {
-      console.log('Vote clicked');
       this.modalOpen = true;
     },
     async loadPower() {

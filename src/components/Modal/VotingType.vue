@@ -39,7 +39,6 @@ export default {
   emits: ['update:modelValue', 'close'],
   methods: {
     select(id) {
-      console.log(id);
       this.$emit('update:modelValue', id);
       this.$emit('close');
     }

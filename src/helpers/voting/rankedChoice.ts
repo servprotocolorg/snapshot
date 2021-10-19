@@ -85,7 +85,6 @@ export default class ApprovalVoting {
   }
 
   resultsByStrategyScore() {
-    console.log(this.votes);
     return this.proposal.choices.map((choice, i) =>
       this.strategies.map((strategy, sI) => {
         return getFinalRound(i, this.votes).reduce(

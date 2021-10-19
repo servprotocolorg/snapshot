@@ -534,7 +534,6 @@ const actions = {
           .sort((a, b) => b[1].balance - a[1].balance)
           .filter(vote => vote[1].balance > 0)
       );
-      console.log(votes);
 
       /* Get results */
       let votesResult: any[] = [];
@@ -597,7 +596,6 @@ const actions = {
         totalSupply: totalSupply
       };
       commit('GET_PROPOSAL_SUCCESS');
-      console.log(proposal, votes, results);
       return { proposal, votes, results };
     } catch (e) {
       commit('GET_PROPOSAL_FAILURE', e);
