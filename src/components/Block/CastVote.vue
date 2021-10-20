@@ -73,9 +73,13 @@ import VOTING_TYPES from '@/helpers/votingTypes';
 
 <script>
 export default {
-  props: ['proposal', 'modelValue'],
+  props: ['proposal'],
   emits: ['update:modelValue', 'clickVote'],
-
+  data() {
+    return {
+      modelValue: []
+    }
+  },
   computed: {
     payload() {
       return this.proposal?.msg?.payload;
@@ -90,6 +94,7 @@ export default {
   methods: {
     emitChoice(c) {
       console.log('Made choice', c);
+      this.modelValue = c;
       this.$emit('update:modelValue', c);
     },
     clickVote() {

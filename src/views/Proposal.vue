@@ -48,6 +48,7 @@ import VOTING_TYPES from '@/helpers/votingTypes';
           @open="modalOpen = true"
           @clickVote="clickVote"
         />
+        {{ selectedChoices }}
         <BlockVotes
           v-if="loaded"
           :space="space"
@@ -270,7 +271,6 @@ export default {
       modalOpen: false,
       modalStrategiesOpen: false,
       selectedChoice: '',
-      selectedChoices: [],
       selectedChoiceSet: [],
       totalScore: 0,
       scores: [],
@@ -407,7 +407,6 @@ export default {
       } else {
         this.selectedChoiceSet.push(id);
       }
-      console.log("Option selected", id);
       this.selectedChoice = this.selectedChoiceSet.join('-');
     }
   },
