@@ -100,7 +100,7 @@ export default class ApprovalVoting {
   }
 
   getChoiceString() {
-    return this.selected
+    return this.selected.value
       .map(choice => {
         if (this.proposal.choices[choice - 1])
           return this.proposal.choices[choice - 1];

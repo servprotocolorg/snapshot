@@ -34,6 +34,7 @@ export default class ApprovalVoting {
   }
 
   getChoiceString() {
+    console.log(this.proposal.choices);
     return this.proposal.choices
       .filter((choice, i) => this.selected.includes(i + 1))
       .join(', ');

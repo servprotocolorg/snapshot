@@ -48,7 +48,6 @@ import VOTING_TYPES from '@/helpers/votingTypes';
           @open="modalOpen = true"
           @clickVote="clickVote"
         />
-        {{ selectedChoices }}
         <BlockVotes
           v-if="loaded"
           :space="space"
