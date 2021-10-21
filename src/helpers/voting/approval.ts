@@ -9,15 +9,16 @@ export default class ApprovalVoting {
     this.votes = votes;
     this.strategies = strategies;
     this.selected = selected;
-    console.log(proposal);
-    if (!proposal.metadata.voting) {
+    if (!proposal.metadata.voting || proposal.metadata.calcByCount) {
       // legacy stuff, lets reshape the data
-      this.votes.forEach(vote => {
-        if (!Array.isArray(vote.msg.payload.choice)) {
-          const choice = vote.msg.payload.choice + '';
-          vote.msg.payload.choice = choice.split('-').map(i => +i);
-        }
-      });
+      this.votes &&
+        Array.isArray(this.votes) &&
+        this.votes.forEach(vote => {
+          if (!Array.isArray(vote.msg.payload.choice)) {
+            const choice = vote.msg.payload.choice + '';
+            vote.msg.payload.choice = choice.split('-').map(i => +i);
+          }
+        });
     }
   }
 

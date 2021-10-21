@@ -42,7 +42,9 @@
               .join(' + ')
           "
         >
-          <template v-if="isCalcByCount"> {{ vote.voteCount }} Vote </template>
+          <template v-if="isCalcByCount"> 
+            {{ vote.voteCount.length || vote.voteCount }} Vote
+          </template>
           <template v-else>
             {{
               `${_numeral(vote.balance)} ${_shorten(space.symbol, 'symbol')}`
@@ -113,7 +115,9 @@ export default {
     },
     isCalcByCount() {
       return (
-        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+        this.isDao ||
+        this.app.harmonyDaoSpace.indexOf(this.space.key) > -1 ||
+        this.proposal.msg.payload.metadata.calcByCount
       );
     },
     voteResult() {
@@ -158,7 +162,7 @@ export default {
     },
     getMultiChoice(choice) {
       let choices = choice;
-      if (typeof choice === 'string') {
+      if (typeof choice === 'string' || typeof choice === 'number') {
         choices = String(choice).split('-');
       } else if (!Array.isArray(choice) && typeof choice === 'object') {
         // we want the keys
@@ -168,6 +172,7 @@ export default {
       for (const choice in choices) {
         result.push(this.proposalOptions[choices[choice] - 1]);
       }
+      console.log(choices, choice);
       return result.join(' / ');
     }
   }

@@ -141,6 +141,16 @@ import VOTING_TYPES from '@/helpers/votingTypes';
                 placeholder="Max selections"
               />
             </UiButton>
+            <UiButton class="width-full mb-2">
+              <label for="calcByCount" class="mr-2">Vote by Count</label>
+              <input
+                id="calcByCount"
+                v-model="form.metadata.calcByCount"
+                type="checkbox"
+                class="input text-center"
+                placeholder="Calculate Vote by Count"
+              />
+            </UiButton>
           </div>
           <UiButton
             @click="handleSubmit"
@@ -226,7 +236,11 @@ export default {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.key) > -1;
     },
     canMultiOptions() {
-      return this.isDao || this.app.harmonyDaoSpace.indexOf(this.key) > -1;
+      return (
+        this.isDao ||
+        this.app.harmonyDaoSpace.indexOf(this.key) > -1 ||
+        this.form.metadata.voting === 'approval'
+      );
     },
     isValid() {
       // const ts = (Date.now() / 1e3).toFixed();

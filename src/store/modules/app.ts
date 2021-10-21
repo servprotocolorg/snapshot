@@ -309,6 +309,7 @@ const actions = {
 
       const [, , blockNumber] = response;
       let [proposal, votes]: any = response;
+
       proposal = formatProposal(proposal);
       proposal.ipfsHash = id;
       const voters = Object.keys(votes);
@@ -521,7 +522,7 @@ const actions = {
         votes[address].profile = profiles[address];
       });
       proposal.profile = authorProfile;
-
+      console.log("Before decomposition", votes);
       votes = Object.fromEntries(
         Object.entries(votes)
           .map((vote: any) => {
@@ -529,20 +530,26 @@ const actions = {
               (strategy, i) => scores[i][vote[1].address] || 0
             );
             vote[1].balance = vote[1].scores.reduce((a, b: any) => a + b, 0);
+            console.log(vote[1].scores);
             return vote;
           })
           .sort((a, b) => b[1].balance - a[1].balance)
           .filter(vote => vote[1].balance > 0)
       );
+      console.log("After decomposition", votes);
 
       /* Get results */
       let votesResult: any[] = [];
       if (
         ['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1 ||
-        state.harmonyDaoSpace.indexOf(space.key) > -1
+        state.harmonyDaoSpace.indexOf(space.key) > -1 ||
+        proposal.msg.payload.metadata.calcByCount
       ) {
         for (const address in votes) {
-          const choices = String(votes[address].msg.payload.choice).split('-');
+          let choices = String(votes[address].msg.payload.choice).split('-');
+          if (Array.isArray(votes[address].msg.payload.choice)) {
+            choices = votes[address].msg.payload.choice;
+          }
 
           for (const choiceIndex in choices) {
             // deep copy vote result warp
@@ -556,15 +563,23 @@ const actions = {
       }
       let type = proposal.msg.payload.metadata.voting;
       if (!proposal.msg.payload.metadata.voting) {
-        type =
-          +proposal.msg.payload.maxCanSelect > 1 ? 'approval' : 'single-choice';
+        type = +proposal.msg.payload.maxCanSelect > 1 ? 'approval' : 'single-choice';
       }
+      console.log(type);
       const strategies = proposal.strategies ?? space.strategies;
       const votingClass = new voting[type](
         proposal.msg.payload,
         Object.values(votesResult),
         strategies
       );
+      try {
+        console.log("totalScores: ", votingClass.resultsByStrategyScore());
+        console.log("totalBalances: ", votingClass.resultsByVoteBalance());
+        console.log("totalVotesBalances: ", votingClass.sumOfResultsBalance());
+      }
+      catch (e) {
+        console.log(e);
+      }
 
       const results = {
         totalStaked: ones(totalStaked).toFixed(0),

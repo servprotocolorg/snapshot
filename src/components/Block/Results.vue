@@ -88,7 +88,9 @@ export default {
     },
     isCalcByCount() {
       return (
-        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+        this.isDao ||
+        this.app.harmonyDaoSpace.indexOf(this.space.key) > -1 ||
+        this.payload.metadata.calcByCount
       );
     }
   },
