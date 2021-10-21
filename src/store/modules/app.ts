@@ -554,13 +554,18 @@ const actions = {
       } else {
         votesResult = votes;
       }
-      const type = proposal.msg.payload.metadata.voting || 'approval';
+      let type = proposal.msg.payload.metadata.voting;
+      if (!proposal.msg.payload.metadata.voting) {
+        type =
+          +proposal.msg.payload.maxCanSelect > 1 ? 'approval' : 'single-choice';
+      }
       const strategies = proposal.strategies ?? space.strategies;
       const votingClass = new voting[type](
         proposal.msg.payload,
         Object.values(votesResult),
         strategies
       );
+
       const results = {
         totalStaked: ones(totalStaked).toFixed(0),
         totalVotes: proposal.msg.payload.choices.map(
@@ -598,6 +603,7 @@ const actions = {
       commit('GET_PROPOSAL_SUCCESS');
       return { proposal, votes, results };
     } catch (e) {
+      console.log(e);
       commit('GET_PROPOSAL_FAILURE', e);
     }
   },

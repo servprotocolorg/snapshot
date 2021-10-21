@@ -104,6 +104,9 @@ export default {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
     },
     canMultiOptions() {
+      if (this.proposal.msg.payload.metadata.voting) {
+        return true;
+      }
       return (
         this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
       );
@@ -119,7 +122,13 @@ export default {
         // re-cal vote power by count of choice
         for (const address in this.votes) {
           const vote = this.votes[address];
-          vote.voteCount = String(vote.msg.payload.choice).split('-').length;
+          if (Array.isArray(vote.msg.payload.choice)) {
+            vote.voteCount = vote.msg.payload.choice;
+          } else if (typeof vote.msg.payload.choice === 'object') {
+            vote.voteCount = Object.keys(vote.msg.payload.choice);
+          } else {
+            vote.voteCount = String(vote.msg.payload.choice).split('-').length;
+          }
           result.push(vote);
         }
         return result;
@@ -148,7 +157,13 @@ export default {
       return this.votes;
     },
     getMultiChoice(choice) {
-      const choices = String(choice).split('-');
+      let choices = choice;
+      if (typeof choice === 'string') {
+        choices = String(choice).split('-');
+      } else if (!Array.isArray(choice) && typeof choice === 'object') {
+        // we want the keys
+        choices = Object.keys(choice);
+      }
       const result = [];
       for (const choice in choices) {
         result.push(this.proposalOptions[choices[choice] - 1]);

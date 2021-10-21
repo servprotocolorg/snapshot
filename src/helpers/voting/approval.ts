@@ -9,12 +9,23 @@ export default class ApprovalVoting {
     this.votes = votes;
     this.strategies = strategies;
     this.selected = selected;
+    console.log(proposal);
+    if (!proposal.metadata.voting) {
+      // legacy stuff, lets reshape the data
+      this.votes.forEach(vote => {
+        if (!Array.isArray(vote.msg.payload.choice)) {
+          const choice = vote.msg.payload.choice + '';
+          vote.msg.payload.choice = choice.split('-').map(i => +i);
+        }
+      });
+    }
   }
 
   resultsByVoteBalance() {
+    console.log(this.votes, this.proposal.choices);
     return this.proposal.choices.map((choice, i) =>
       this.votes
-        .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
+        .filter((vote: any) => vote.msg.payload.choice.indexOf(i + 1) > -1)
         .reduce((a, b: any) => a + b.balance, 0)
     );
   }
@@ -23,7 +34,7 @@ export default class ApprovalVoting {
     return this.proposal.choices.map((choice, i) =>
       this.strategies.map((strategy, sI) =>
         this.votes
-          .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
+          .filter((vote: any) => vote.msg.payload.choice.indexOf(i + 1) > -1)
           .reduce((a, b: any) => a + b.scores[sI], 0)
       )
     );
@@ -36,7 +47,7 @@ export default class ApprovalVoting {
   getChoiceString() {
     console.log(this.proposal.choices);
     return this.proposal.choices
-      .filter((choice, i) => this.selected.includes(i + 1))
+      .filter((choice, i) => this.selected.indexOf(i + 1) > -1)
       .join(', ');
   }
 }

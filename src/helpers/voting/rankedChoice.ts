@@ -53,9 +53,10 @@ function irv(ballots, rounds) {
 }
 
 function getFinalRound(i, votes) {
+  console.log(votes);
   const results = irv(
     votes.map((vote: any) => [
-      vote.msg.payload.choice.split('-'),
+      vote.msg.payload.choice,
       vote.balance,
       vote.scores
     ]),
@@ -100,7 +101,7 @@ export default class ApprovalVoting {
   }
 
   getChoiceString() {
-    return this.selected.value
+    return this.selected
       .map(choice => {
         if (this.proposal.choices[choice - 1])
           return this.proposal.choices[choice - 1];

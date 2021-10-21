@@ -81,6 +81,10 @@ export default {
       selectedChoices: selectedChoices
     };
   },
+  beforeMount() {
+    for (const member in selectedChoices.value)
+      delete selectedChoices.value[member];
+  },
   computed: {
     payload() {
       return this.proposal?.msg?.payload || [];

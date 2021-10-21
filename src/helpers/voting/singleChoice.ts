@@ -15,7 +15,7 @@ export default class SingleChoiceVoting {
   resultsByVoteBalance() {
     return this.proposal.choices.map((choice, i) =>
       this.votes
-        .filter((vote: any) => vote.choice === i + 1)
+        .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
         .reduce((a, b: any) => a + b.balance, 0)
     );
   }
@@ -26,7 +26,7 @@ export default class SingleChoiceVoting {
     return this.proposal.choices.map((choice, i) =>
       this.strategies.map((strategy, sI) =>
         this.votes
-          .filter((vote: any) => vote.choice === i + 1)
+          .filter((vote: any) => parseInt(vote.msg.payload.choice) === i + 1)
           .reduce((a, b: any) => a + b.scores[sI], 0)
       )
     );

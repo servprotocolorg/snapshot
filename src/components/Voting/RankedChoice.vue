@@ -61,16 +61,19 @@ export default {
       return this.proposal.msg.payload;
     }
   },
+  beforeMount() {
+    selectedChoices.value.splice(0, selectedChoices.value.length);
+  },
   methods: {
     selectChoice(i) {
       selectedChoices.value.push(i);
-      this.$emit('selectChoice', selectedChoices);
+      this.$emit('selectChoice', selectedChoices.value);
     },
     removeChoice(i) {
       selectedChoices.value.splice(i, 1);
     },
     updateChoices() {
-      this.$emit('selectChoice', selectedChoices);
+      this.$emit('selectChoice', selectedChoices.value);
     }
   }
 };

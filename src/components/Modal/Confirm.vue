@@ -139,11 +139,15 @@ export default {
       let choice = this.selectedChoice;
       if (!choice || choice.length === 0) {
         if (Array.isArray(this.selectedChoices)) {
-          choice = this.selectedChoices.join('-');
+          if (this.proposal.msg.payload.metadata.voting) {
+            choice = this.selectedChoices;
+          } else {
+            choice = this.selectedChoices.join('-');
+          }
         } else if (typeof this.selectedChoices === 'object') {
           choice = this.selectedChoices;
         } else {
-          choice = [this.selectedChoices];
+          choice = this.selectedChoices;
         }
       }
       this.loading = true;
