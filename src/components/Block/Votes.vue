@@ -42,7 +42,7 @@
               .join(' + ')
           "
         >
-          <template v-if="isCalcByCount"> 
+          <template v-if="isCalcByCount">
             {{ vote.voteCount.length || vote.voteCount }} Vote
           </template>
           <template v-else>
@@ -172,7 +172,6 @@ export default {
       for (const choice in choices) {
         result.push(this.proposalOptions[choices[choice] - 1]);
       }
-      console.log(choices, choice);
       return result.join(' / ');
     }
   }

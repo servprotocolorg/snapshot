@@ -117,7 +117,6 @@ export default {
       return ['dao-mainnet', 'dao-testnet'].indexOf(this.space.key) > -1;
     },
     isCalcByCount() {
-      console.log(this.proposal.msg.payload.metadata.calcByCount);
       return (
         this.isDao ||
         this.app.harmonyDaoSpace.indexOf(this.space.key) > -1 ||

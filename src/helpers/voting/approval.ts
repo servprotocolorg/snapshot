@@ -23,7 +23,6 @@ export default class ApprovalVoting {
   }
 
   resultsByVoteBalance() {
-    console.log(this.votes, this.proposal.choices);
     return this.proposal.choices.map((choice, i) =>
       this.votes
         .filter((vote: any) => vote.msg.payload.choice.indexOf(i + 1) > -1)
@@ -46,7 +45,6 @@ export default class ApprovalVoting {
   }
 
   getChoiceString() {
-    console.log(this.proposal.choices);
     return this.proposal.choices
       .filter((choice, i) => this.selected.indexOf(i + 1) > -1)
       .join(', ');

@@ -455,8 +455,12 @@ const actions = {
         console.timeEnd('getHarmonyProposal.scores');
 
         console.log('harmony scores: ', scores);
-      } else if (state.harmonyDaoSpace.indexOf(space.key) > -1) {
+      } else if (
+        state.harmonyDaoSpace.indexOf(space.key) > -1 ||
+        proposal.msg.payload.metadata.calcByCount
+      ) {
         let scoresRaw: any;
+        console.log(voters);
         [scoresRaw, profiles] = await Promise.all([
           getScoresDirect(
             space.key,
@@ -482,19 +486,16 @@ const actions = {
             }
           }
         }
-
         let minScore = 0;
         if (space.filters && space.filters.minScore > 0) {
           minScore = space.filters.minScore;
         }
-
         const scoresNew = [];
         for (const strategiesIndex in space.strategies) {
           scoresNew[strategiesIndex] = {};
         }
-
         for (const scoresAddress in scoresSet) {
-          if (scoresSet[scoresAddress] > minScore) {
+          if (scoresSet[scoresAddress] >= minScore) {
             // @ts-ignore
             scoresNew[0][scoresAddress] = 1;
           }
@@ -522,7 +523,6 @@ const actions = {
         votes[address].profile = profiles[address];
       });
       proposal.profile = authorProfile;
-      console.log("Before decomposition", votes);
       votes = Object.fromEntries(
         Object.entries(votes)
           .map((vote: any) => {
@@ -530,13 +530,11 @@ const actions = {
               (strategy, i) => scores[i][vote[1].address] || 0
             );
             vote[1].balance = vote[1].scores.reduce((a, b: any) => a + b, 0);
-            console.log(vote[1].scores);
             return vote;
           })
           .sort((a, b) => b[1].balance - a[1].balance)
           .filter(vote => vote[1].balance > 0)
       );
-      console.log("After decomposition", votes);
 
       /* Get results */
       let votesResult: any[] = [];
@@ -550,7 +548,6 @@ const actions = {
           if (Array.isArray(votes[address].msg.payload.choice)) {
             choices = votes[address].msg.payload.choice;
           }
-
           for (const choiceIndex in choices) {
             // deep copy vote result warp
             const voteItem = JSON.parse(JSON.stringify(votes[address]));
@@ -563,24 +560,15 @@ const actions = {
       }
       let type = proposal.msg.payload.metadata.voting;
       if (!proposal.msg.payload.metadata.voting) {
-        type = +proposal.msg.payload.maxCanSelect > 1 ? 'approval' : 'single-choice';
+        type =
+          +proposal.msg.payload.maxCanSelect > 1 ? 'approval' : 'single-choice';
       }
-      console.log(type);
       const strategies = proposal.strategies ?? space.strategies;
       const votingClass = new voting[type](
         proposal.msg.payload,
         Object.values(votesResult),
         strategies
       );
-      try {
-        console.log("totalScores: ", votingClass.resultsByStrategyScore());
-        console.log("totalBalances: ", votingClass.resultsByVoteBalance());
-        console.log("totalVotesBalances: ", votingClass.sumOfResultsBalance());
-      }
-      catch (e) {
-        console.log(e);
-      }
-
       const results = {
         totalStaked: ones(totalStaked).toFixed(0),
         totalVotes: proposal.msg.payload.choices.map(

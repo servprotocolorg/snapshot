@@ -53,7 +53,6 @@ function irv(ballots, rounds) {
 }
 
 function getFinalRound(i, votes) {
-  console.log(votes);
   const results = irv(
     votes.map((vote: any) => [
       vote.msg.payload.choice,
