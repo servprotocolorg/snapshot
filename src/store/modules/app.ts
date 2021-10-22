@@ -460,7 +460,6 @@ const actions = {
         proposal.msg.payload.metadata.calcByCount
       ) {
         let scoresRaw: any;
-        console.log(voters);
         [scoresRaw, profiles] = await Promise.all([
           getScoresDirect(
             space.key,
@@ -541,7 +540,9 @@ const actions = {
       if (
         ['dao-mainnet', 'dao-testnet'].indexOf(space.key) > -1 ||
         state.harmonyDaoSpace.indexOf(space.key) > -1 ||
-        proposal.msg.payload.metadata.calcByCount
+        (proposal.msg.payload.metadata.calcByCount &&
+          (proposal.msg.payload.metadata.voting == 'approval' ||
+            proposal.msg.payload.metadata.voting == 'single-choice'))
       ) {
         for (const address in votes) {
           let choices = String(votes[address].msg.payload.choice).split('-');

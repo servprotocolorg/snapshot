@@ -1,9 +1,12 @@
 import { getNumberWithOrdinal } from '@/helpers/utils';
 
 function irv(ballots, rounds) {
+  console.log(ballots);
+
   const candidates: any[] = [...new Set(ballots.map(vote => vote[0]).flat())];
   const votes = Object.entries(
     ballots.reduce((votes, [v], i, src) => {
+      console.log(v[0], votes);
       votes[v[0]][0] += src[i][1];
       votes[v[0]][1].length > 1
         ? (votes[v[0]][1] = votes[v[0]][1].map(
@@ -53,6 +56,7 @@ function irv(ballots, rounds) {
 }
 
 function getFinalRound(i, votes) {
+  console.log(votes);
   const results = irv(
     votes.map((vote: any) => [
       vote.msg.payload.choice,
@@ -79,6 +83,7 @@ export default class ApprovalVoting {
   }
 
   resultsByVoteBalance() {
+    console.log(this.proposal.choices, this.votes);
     return this.proposal.choices.map((choice, i) =>
       getFinalRound(i, this.votes).reduce((a, b: any) => a + b[1][0], 0)
     );
