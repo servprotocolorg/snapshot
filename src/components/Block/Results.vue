@@ -30,9 +30,7 @@
             $n(
               !results.totalVotesBalances
                 ? 0
-                : ((100 / totalBase) *
-                    results.totalBalances[choice.i]) /
-                    1e2,
+                : ((100 / totalBase) * results.totalBalances[choice.i]) / 1e2,
               'percent'
             )
           "
@@ -77,7 +75,9 @@ export default {
     totalBase() {
       if (['staking-mainnet', 'staking-testnet'].indexOf(this.space.key) > -1) {
         return this.results.totalStaked;
-      } else if (['harmony-mainnet', 'harmony-testnet'].indexOf(this.space.key) > -1) {
+      } else if (
+        ['harmony-mainnet', 'harmony-testnet'].indexOf(this.space.key) > -1
+      ) {
         return this.results.totalSupply;
       } else {
         return this.results.totalVotesBalances;
@@ -88,7 +88,9 @@ export default {
     },
     isCalcByCount() {
       return (
-        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+        this.isDao ||
+        this.app.harmonyDaoSpace.indexOf(this.space.key) > -1 ||
+        this.payload.metadata.calcByCount
       );
     }
   },

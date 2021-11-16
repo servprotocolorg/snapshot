@@ -1,22 +1,33 @@
+<script setup>
+import VOTING_TYPES from '@/helpers/votingTypes';
+import { getChoiceString } from '@/helpers/utils';
+const format = getChoiceString;
+</script>
 <template>
   <UiModal :open="open" v-if="open" @close="$emit('close')" class="d-flex">
     <template v-slot:header>
       <h3>Confirm vote</h3>
     </template>
     <div class="d-flex flex-column flex-auto">
+      <h4
+        class="m-4 mb-0 text-center"
+        v-if="proposal.msg.payload.metadata.voting"
+      >
+        Voting using
+        {{ `${VOTING_TYPES[proposal.msg.payload.metadata.voting]}` }}
+      </h4>
       <h4 class="m-4 mb-0 text-center">
-        Are you sure you want to vote {{
+        Are you sure you want to vote
+        {{
           selectedChoiceSet.length === 1
-            ? '"' + proposal.msg.payload.choices[selectedChoice - 1] + '"'
+            ? '"' + format(proposal.msg.payload, selectedChoices) + '"'
             : 'them'
         }}? <br />This action <b>cannot</b> be undone.
       </h4>
       <div class="m-4 p-4 border rounded-2 text-white">
         <div class="d-flex">
           <span v-text="'Option'" class="flex-auto text-gray mr-1" />
-          <template v-for="choice in selectedChoiceSet">
-            {{ proposal.msg.payload.choices[choice - 1] + '\n' }}
-          </template>
+          {{ format(proposal.msg.payload, selectedChoices) }}
         </div>
         <div class="d-flex">
           <span v-text="'Snapshot'" class="flex-auto text-gray mr-1" />
@@ -84,6 +95,7 @@ export default {
     'proposal',
     'id',
     'selectedChoice',
+    'selectedChoices',
     'snapshot',
     'totalScore',
     'scores'
@@ -91,10 +103,13 @@ export default {
   emits: ['reload', 'close'],
   data() {
     return {
-      loading: false,
+      loading: false
     };
   },
   computed: {
+    choices() {
+      return this.proposal.msg.payload.choices;
+    },
     symbols() {
       return this.space.strategies.map(strategy => strategy.params.symbol);
     },
@@ -103,23 +118,47 @@ export default {
     },
     isCalcByCount() {
       return (
-        this.isDao || this.app.harmonyDaoSpace.indexOf(this.space.key) > -1
+        this.isDao ||
+        this.app.harmonyDaoSpace.indexOf(this.space.key) > -1 ||
+        this.proposal.msg.payload.metadata.calcByCount
       );
     },
     selectedChoiceSet() {
+      if (
+        Array.isArray(this.selectedChoices) &&
+        this.selectedChoices?.length > 0
+      ) {
+        return this.selectedChoices;
+      } else if (typeof this.selectedChoices === 'object') {
+        return this.selectedChoices;
+      }
       return this.selectedChoice.split('-');
     }
   },
   methods: {
     ...mapActions(['send']),
     async handleSubmit() {
+      let choice = this.selectedChoice;
+      if (!choice || choice.length === 0) {
+        if (Array.isArray(this.selectedChoices)) {
+          if (this.proposal.msg.payload.metadata.voting) {
+            choice = this.selectedChoices;
+          } else {
+            choice = this.selectedChoices.join('-');
+          }
+        } else if (typeof this.selectedChoices === 'object') {
+          choice = this.selectedChoices;
+        } else {
+          choice = this.selectedChoices;
+        }
+      }
       this.loading = true;
       await this.send({
         space: this.space.key,
         type: 'vote',
         payload: {
           proposal: this.id,
-          choice: this.selectedChoice,
+          choice: choice,
           metadata: {}
         }
       });

@@ -9,7 +9,11 @@
         </div>
         <div class="ml-3 text-right hide-sm">
           {{ spaces.length }} spaces
-          <router-link :to="{ name: 'setup' }" class="hide-md ml-3" v-show="false">
+          <router-link
+            :to="{ name: 'setup' }"
+            class="hide-md ml-3"
+            v-show="false"
+          >
             <UiButton>Create space</UiButton>
           </router-link>
         </div>
