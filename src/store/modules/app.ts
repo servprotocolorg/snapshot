@@ -552,7 +552,14 @@ const actions = {
           for (const choiceIndex in choices) {
             // deep copy vote result warp
             const voteItem = JSON.parse(JSON.stringify(votes[address]));
-            voteItem.msg.payload.choice = parseInt(choices[choiceIndex]);
+            // if proposal is single choice, or its not defined and maxCanSelect is <= 1 then its a single-choice and hence an int
+            if (proposal.msg.payload.metadata.voting === 'single-choice' || 
+              (!proposal.msg.payload.metadata.voting && (isNaN(+proposal.msg.payload.maxCanSelect)) || +proposal.msg.payload.maxCanSelect <= 1)) { 
+              voteItem.msg.payload.choice = parseInt(choices[choiceIndex]); // single choice means vote is an int
+            }
+            else {
+              voteItem.msg.payload.choice = [parseInt(choices[choiceIndex])]; // else it should be an array
+            }
             votesResult.push(voteItem);
           }
         }
