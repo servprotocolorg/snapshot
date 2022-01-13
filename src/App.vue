@@ -3,6 +3,13 @@
     <UiLoading v-if="app.loading || !app.init" class="overlay big" />
     <div v-else>
       <Topnav />
+      <Container :slim="true">
+      <div class="overflow-hidden mr-n4 notice">
+        <strong>IMPORTANT</strong>: This service is moving to <a href="https://snapshot.org/#/?network=1666600000" target="_blank">Snapshot.org</a> on Feb 28, 2022. <a href="https://givp.medium.com/harmony-snapshot-official-migration-to-snapshot-org-565dade74c2" target="_blank">
+          Details
+        </a>
+      </div>
+      </Container>
       <div class="pb-6 overflow-hidden">
         <router-view :key="$route.path" class="flex-auto" />
       </div>
@@ -42,3 +49,14 @@ export default {
   }
 };
 </script>
+
+<style>
+.notice {
+  padding: 20px 20px 15px 20px;
+  border: 1px solid #773344;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #e85f5c;
+  color: #9cfffa;
+}
+</style>
