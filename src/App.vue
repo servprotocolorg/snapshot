@@ -5,7 +5,7 @@
       <Topnav />
       <Container :slim="true">
       <div class="overflow-hidden mr-n4 notice">
-        <strong>IMPORTANT</strong>: This service is moving to <a href="https://snapshot.org/#/?network=1666600000" target="_blank">Snapshot.org</a> on Feb 28, 2022. <a href="https://givp.medium.com/harmony-snapshot-official-migration-to-snapshot-org-565dade74c2" target="_blank">
+        <strong>IMPORTANT</strong>: This service has moved to <a href="https://snapshot.org/#/?network=1666600000" target="_blank">Snapshot.org</a>. <a href="https://givp.medium.com/harmony-snapshot-official-migration-to-snapshot-org-565dade74c2" target="_blank">
           Details
         </a>
       </div>

@@ -300,26 +300,26 @@ export default {
       }
     },
     async handleSubmit() {
-      this.loading = true;
-      this.form.choices = this.choices.map(choice => choice.text);
-      this.form.metadata.strategies = this.space.strategies;
-      try {
-        const { ipfsHash } = await this.send({
-          space: this.space.key,
-          type: 'proposal',
-          payload: this.form
-        });
-        this.$router.push({
-          name: 'proposal',
-          params: {
-            key: this.key,
-            id: ipfsHash
-          }
-        });
-      } catch (e) {
-        console.error(e);
-        this.loading = false;
-      }
+      // this.loading = true;
+      // this.form.choices = this.choices.map(choice => choice.text);
+      // this.form.metadata.strategies = this.space.strategies;
+      // try {
+      //   const { ipfsHash } = await this.send({
+      //     space: this.space.key,
+      //     type: 'proposal',
+      //     payload: this.form
+      //   });
+      //   this.$router.push({
+      //     name: 'proposal',
+      //     params: {
+      //       key: this.key,
+      //       id: ipfsHash
+      //     }
+      //   });
+      // } catch (e) {
+      //   console.error(e);
+      //   this.loading = false;
+      // }
     }
   }
 };
