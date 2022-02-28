@@ -172,6 +172,8 @@ const actions = {
     return validators;
   },
   send: async ({ commit, dispatch, rootState }, { space, type, payload }) => {
+    throw new Error("IMPORTANT: This service has moved to Snapshot.org");
+
     const auth = getInstance();
 
     commit('SEND_REQUEST');

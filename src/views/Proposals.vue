@@ -18,7 +18,7 @@
           v-if="canCreateProposal"
           :to="{ name: 'create', params: { key } }"
         >
-          <UiButton>New proposal</UiButton>
+          <UiButton :disabled="true">New proposal</UiButton>
         </router-link>
         <router-link
           v-if="isMember && isEns"
@@ -126,7 +126,7 @@ export default {
         : states;
     },
     totalProposals() {
-      return Object.keys(this.proposals).length;
+      return this.proposals && Object.keys(this.proposals).length || 0;
     },
     proposalsWithFilter() {
       if (this.totalProposals === 0) return {};
